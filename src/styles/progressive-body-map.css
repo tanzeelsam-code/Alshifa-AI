@@ -1,0 +1,171 @@
+/* progressive-body-map.css */
+.progressive-body-map {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.progress-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.step {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.step.active {
+    background: #3b82f6;
+    color: white;
+}
+
+.connector {
+    width: 60px;
+    height: 2px;
+    background: #e5e7eb;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.subtitle {
+    text-align: center;
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+.region-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.region-card {
+    padding: 1.5rem;
+    border: 3px solid;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.region-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.region-icon {
+    font-size: 2.5rem;
+}
+
+.region-label {
+    font-size: 1rem;
+    color: #1f2937;
+}
+
+.region-desc {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: center;
+}
+
+.unsure-button {
+    width: 100%;
+    padding: 1rem;
+    border: 2px dashed #f59e0b;
+    border-radius: 12px;
+    background: #fffbeb;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.unsure-button:hover {
+    background: #fef3c7;
+}
+
+.unsure-button strong {
+    display: block;
+    color: #92400e;
+    margin-bottom: 0.25rem;
+}
+
+.unsure-button small {
+    display: block;
+    color: #b45309;
+}
+
+.refinement-grid,
+.clinical-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.refinement-card,
+.clinical-card {
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.refinement-card:hover,
+.clinical-card:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.back-button,
+.general-button {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+.general-button {
+    width: 100%;
+    background: #f3f4f6;
+    font-weight: 500;
+}
+
+.back-button:hover,
+.general-button:hover {
+    background: #f3f4f6;
+}
+
+@media (max-width: 640px) {
+    .region-grid {
+        grid-template-columns: 1fr;
+    }
+}

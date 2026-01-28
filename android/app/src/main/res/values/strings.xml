@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Alshifa AI Medical Assistant</string>
+    <string name="title_activity_main">Alshifa AI Medical Assistant</string>
+    <string name="package_name">com.shifaai.doctor</string>
+    <string name="custom_url_scheme">com.shifaai.doctor</string>
+</resources>

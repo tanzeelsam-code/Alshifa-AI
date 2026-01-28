@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2D5F4D">
+    <title>Medication Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2D5F4D;
+            --danger: #C44A33;
+            --warning: #B8860B;
+            --success: #2A7A6F;
+            --bg-main: #FAFAFA;
+            --bg-card: #FFFFFF;
+            --text-primary: #1A1A1A;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border: #E0E0E0;
+            --border-strong: #CCCCCC;
+            --overlay: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px 16px 120px;
+        }
+
+        /* Header with Mode Toggle */
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .date {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px;
+            margin-top: 12px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Next Dose Section - Simplified */
+        .next-dose {
+            background: var(--bg-card);
+            border: 2px solid var(--border-strong);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .next-dose.urgent {
+            border-color: var(--danger);
+            background: #FFF5F5;
+        }
+
+        .next-dose.due {
+            border-color: var(--warning);
+            background: #FFFEF5;
+        }
+
+        .next-dose-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .next-dose-time {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .next-dose-status {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .next-dose-status.overdue {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .medication-info {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .med-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .med-instructions {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .med-source {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .action-btn.primary:active {
+            transform: scale(0.98);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+
+        /* Medication List */
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 24px 0 12px;
+        }
+
+        .med-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--status-color);
+        }
+
+        .med-card.status-taken {
+            --status-color: var(--success);
+            opacity: 0.6;
+        }
+
+        .med-card.status-due {
+            --status-color: var(--warning);
+        }
+
+        .med-card.status-missed {
+            --status-color: var(--danger);
+        }
+
+        .med-card.status-upcoming {
+            --status-color: var(--primary);
+        }
+
+        .med-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .med-card-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .med-card-time {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .med-card-dose {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .status-label {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .status-label.taken {
+            background: #E8F5F3;
+            color: var(--success);
+        }
+
+        .status-label.due {
+            background: #FFF9E6;
+            color: var(--warning);
+        }
+
+        .status-label.missed {
+            background: #FFE8E8;
+            color: var(--danger);
+        }
+
+        .status-label.upcoming {
+            background: #F0F0F0;
+            color: var(--text-secondary);
+        }
+
+        /* Safety Warnings */
+        .warning-banner {
+            background: #FFF9E6;
+            border: 1px solid #E6D399;
+            border-left: 4px solid var(--warning);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .warning-banner.danger {
+            background: #FFE8E8;
+            border-color: #E6B3B3;
+            border-left-color: var(--danger);
+        }
+
+        .warning-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .warning-content {
+            flex: 1;
+        }
+
+        .warning-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .warning-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Review Mode - Adherence */
+        .adherence-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .adherence-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .adherence-summary {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .adherence-detail {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .adherence-bar-container {
+            background: #F0F0F0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .adherence-bar {
+            height: 100%;
+            background: var(--success);
+            transition: width 0.5s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Confirmation Bottom Sheet */
+        .bottom-sheet-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--overlay);
+            display: none;
+            z-index: 1000;
+            animation: fadeIn 0.2s;
+        }
+
+        .bottom-sheet-overlay.active {
+            display: block;
+        }
+
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 16px 16px 0 0;
+            padding: 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1001;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .bottom-sheet.active {
+            transform: translateY(0);
+        }
+
+        .bottom-sheet-handle {
+            width: 40px;
+            height: 4px;
+            background: #E0E0E0;
+            border-radius: 2px;
+            margin: 0 auto 20px;
+        }
+
+        .bottom-sheet-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .confirmation-box {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 16px;
+            padding: 12px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-container:hover {
+            background: #FAFAFA;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-strong);
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .checkbox.checked {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 14px;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .btn-confirm {
+            flex: 2;
+            padding: 14px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-confirm:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Undo Toast */
+        .undo-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 8px;
+            display: none;
+            align-items: center;
+            gap: 16px;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .undo-toast.show {
+            display: flex;
+            animation: slideUp 0.3s;
+        }
+
+        .undo-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* FAB */
+        .fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(45, 95, 77, 0.3);
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* System Notification Toast */
+        .notification-toast {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 16px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            border-left: 4px solid var(--primary);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 3000;
+            max-width: 90%;
+        }
+
+        .notification-toast.show {
+            display: flex;
+            animation: slideDown 0.3s;
+        }
+
+        .notification-icon {
+            font-size: 24px;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .notification-message {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translate(-50%, 20px);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translate(-50%, -20px);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        /* View Sections */
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="date" id="currentDate">Saturday, January 3</div>
+            <div class="mode-toggle">
+                <button class="mode-btn active" onclick="switchMode('today')">Today</button>
+                <button class="mode-btn" onclick="switchMode('history')">History</button>
+            </div>
+        </div>
+
+        <!-- TODAY VIEW -->
+        <div class="view-section active" id="todayView">
+            <!-- Safety Warnings -->
+            <div id="warningsContainer"></div>
+
+            <!-- Next Dose -->
+            <div class="next-dose due" id="nextDoseCard">
+                <div class="next-dose-header">Next Dose</div>
+                <div class="next-dose-time">12:30 PM</div>
+                <div class="next-dose-status">Due in 15 minutes</div>
+                
+                <div class="medication-info">
+                    <div class="med-name">Metformin 500mg</div>
+                    <div class="med-instructions">Take 1 tablet after meal</div>
+                    <div class="med-source">Prescribed by Dr. Ahmed (in-app)</div>
+                </div>
+
+                <button class="action-btn primary" onclick="openConfirmation('med1')">
+                    Mark as Taken
+                </button>
+            </div>
+
+            <!-- Today's Medications -->
+            <div class="section-title">Today's Schedule</div>
+            
+            <div class="med-card status-taken">
+                <div class="med-card-header">
+                    <div>
+                        <div class="med-card-name">Aspirin 75mg</div>
+                        <div class="med-card-time">8:00 AM</div>
+                    </div>
+                </div>
+                <div class="med-card-dose">1 tablet before breakfast</div>
+                <div class="med-source">Dr. Ahmed • External prescription</div>
+                <span class="status-label taken">✓ Taken at 7:58 AM</span>
+            </div>
+
+            <div class="med-card status-missed">
+                <div class="med-card-header">
+                    <div>
+                        <div class="med-card-name">Vitamin D 1000 IU</div>
+                        <div class="med-card-time">9:00 AM</div>
+                    </div>
+                </div>
+                <div class="med-card-dose">1 capsule with breakfast</div>
+                <div class="med-source">Self-added (OTC)</div>
+                <span class="status-label missed">Missed (3+ hours late)</span>
+                <div style="margin-top: 12px;">
+                    <button class="action-btn primary" onclick="openConfirmation('med3', true)">
+                        Take Now (Late)
+                    </button>
+                </div>
+            </div>
+
+            <div class="med-card status-upcoming">
+                <div class="med-card-header">
+                    <div>
+                        <div class="med-card-name">Atorvastatin 20mg</div>
+                        <div class="med-card-time">9:00 PM</div>
+                    </div>
+                </div>
+                <div class="med-card-dose">1 tablet before bed</div>
+                <div class="med-source">Dr. Sarah • In-app prescription</div>
+                <span class="status-label upcoming">Scheduled</span>
+            </div>
+        </div>
+
+        <!-- HISTORY VIEW -->
+        <div class="view-section" id="historyView">
+            <!-- Adherence Section -->
+            <div class="adherence-section">
+                <div class="adherence-title">Today's Adherence</div>
+                <div class="adherence-summary">2 of 4 doses taken</div>
+                <div class="adherence-detail">1 missed • 1 upcoming</div>
+                
+                <div class="adherence-bar-container">
+                    <div class="adherence-bar" style="width: 50%"></div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">2</div>
+                        <div class="stat-label">Taken</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1</div>
+                        <div class="stat-label">Missed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1</div>
+                        <div class="stat-label">Upcoming</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7-Day History -->
+            <div class="section-title">Past 7 Days</div>
+            <div class="adherence-section">
+                <div class="adherence-summary">18 of 20 doses taken (90%)</div>
+                <div class="adherence-bar-container">
+                    <div class="adherence-bar" style="width: 90%"></div>
+                </div>
+            </div>
+
+            <!-- Medication List -->
+            <div class="section-title">All Active Medications</div>
+            <div class="med-card">
+                <div class="med-card-name">Metformin 500mg</div>
+                <div class="med-card-dose">1 tablet, twice daily</div>
+                <div class="med-source">Dr. Ahmed • Prescribed in-app</div>
+            </div>
+            <div class="med-card">
+                <div class="med-card-name">Aspirin 75mg</div>
+                <div class="med-card-dose">1 tablet, daily (morning)</div>
+                <div class="med-source">Dr. Ahmed • External prescription</div>
+            </div>
+            <div class="med-card">
+                <div class="med-card-name">Atorvastatin 20mg</div>
+                <div class="med-card-dose">1 tablet, daily (evening)</div>
+                <div class="med-source">Dr. Sarah • Prescribed in-app</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Bottom Sheet -->
+    <div class="bottom-sheet-overlay" id="confirmOverlay" onclick="closeConfirmation()"></div>
+    <div class="bottom-sheet" id="confirmSheet">
+        <div class="bottom-sheet-handle"></div>
+        <div class="bottom-sheet-title">Confirm Medication Taken</div>
+        
+        <div class="confirmation-box">
+            <div class="med-name" id="confirmMedName">Metformin 500mg</div>
+            <div class="med-instructions" id="confirmMedDose">1 tablet after meal</div>
+        </div>
+
+        <div class="checkbox-container" onclick="toggleCheckbox()">
+            <div class="checkbox" id="confirmCheckbox"></div>
+            <div class="checkbox-label">Yes, I have taken this medication</div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-cancel" onclick="closeConfirmation()">Cancel</button>
+            <button class="btn-confirm" id="confirmBtn" disabled onclick="confirmTaken()">Confirm</button>
+        </div>
+    </div>
+
+    <!-- Undo Toast -->
+    <div class="undo-toast" id="undoToast">
+        <span>Medication marked as taken</span>
+        <button class="undo-btn" onclick="undoAction()">Undo</button>
+    </div>
+
+    <!-- System Notification Toast -->
+    <div class="notification-toast" id="notificationToast">
+        <div class="notification-icon">💊</div>
+        <div class="notification-content">
+            <div class="notification-title">Medication Reminder</div>
+            <div class="notification-message">Time to take Metformin 500mg</div>
+        </div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab" onclick="addMedication()">+</button>
+
+    <script>
+        // ========================
+        // NOTIFICATION SYSTEM
+        // ========================
+        class MedicationNotificationSystem {
+            constructor() {
+                this.audioContext = null;
+                this.pendingAction = null;
+                this.initAudio();
+                this.requestNotificationPermission();
+                this.registerServiceWorker();
+            }
+
+            initAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.log('Web Audio API not supported');
+                }
+            }
+
+            async requestNotificationPermission() {
+                if ('Notification' in window && Notification.permission === 'default') {
+                    const permission = await Notification.requestPermission();
+                    console.log('Notification permission:', permission);
+                }
+            }
+
+            async registerServiceWorker() {
+                if ('serviceWorker' in navigator) {
+                    try {
+                        // In production, you'd have a separate service-worker.js file
+                        console.log('Service Worker support detected');
+                        // const registration = await navigator.serviceWorker.register('/service-worker.js');
+                        // console.log('Service Worker registered:', registration);
+                    } catch (error) {
+                        console.log('Service Worker registration failed:', error);
+                    }
+                }
+            }
+
+            playSound(type = 'default') {
+                if (!this.audioContext) return;
+
+                const now = this.audioContext.currentTime;
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                // Different sounds for different contexts
+                const frequencies = {
+                    default: [523.25, 659.25], // C5, E5
+                    urgent: [659.25, 523.25, 659.25], // E5, C5, E5 (more insistent)
+                    success: [523.25, 659.25, 783.99], // C5, E5, G5 (pleasant)
+                    warning: [392.00, 493.88] // G4, B4 (lower, serious)
+                };
+
+                const freq = frequencies[type] || frequencies.default;
+                oscillator.type = 'sine';
+                
+                freq.forEach((f, i) => {
+                    oscillator.frequency.setValueAtTime(f, now + (i * 0.15));
+                });
+
+                gainNode.gain.setValueAtTime(0.15, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+                oscillator.start(now);
+                oscillator.stop(now + 0.5);
+            }
+
+            vibrate(pattern = 'default') {
+                if (!('vibrate' in navigator)) return;
+
+                const patterns = {
+                    default: [200, 100, 200],
+                    urgent: [100, 50, 100, 50, 100, 50, 400],
+                    success: [50, 50, 50],
+                    reminder: [300, 200, 300, 200, 500]
+                };
+
+                navigator.vibrate(patterns[pattern] || patterns.default);
+            }
+
+            showNotification(title, body, options = {}) {
+                this.playSound(options.type || 'default');
+                this.vibrate(options.vibration || 'reminder');
+
+                if (Notification.permission === 'granted') {
+                    const notification = new Notification(title, {
+                        body: body,
+                        icon: '💊',
+                        badge: '💊',
+                        tag: options.tag || 'medication-reminder',
+                        requireInteraction: options.requireInteraction !== false,
+                        ...options
+                    });
+
+                    notification.onclick = () => {
+                        window.focus();
+                        notification.close();
+                    };
+                }
+
+                // Also show in-app toast
+                this.showToast(title, body);
+            }
+
+            showToast(title, message) {
+                const toast = document.getElementById('notificationToast');
+                toast.querySelector('.notification-title').textContent = title;
+                toast.querySelector('.notification-message').textContent = message;
+                toast.classList.add('show');
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 5000);
+            }
+
+            // Escalation Logic
+            scheduleEscalation(medicationId, scheduledTime) {
+                const times = {
+                    due: scheduledTime,
+                    remind: scheduledTime + (10 * 60 * 1000), // +10 min
+                    overdue: scheduledTime + (30 * 60 * 1000), // +30 min
+                    missed: scheduledTime + (2 * 60 * 60 * 1000) // +2 hours
+                };
+
+                // Due notification
+                setTimeout(() => {
+                    this.showNotification(
+                        'Medication Due',
+                        'Time to take Metformin 500mg',
+                        { type: 'default', vibration: 'default' }
+                    );
+                }, times.due - Date.now());
+
+                // Reminder (if not taken)
+                setTimeout(() => {
+                    // Check if still not taken
+                    this.showNotification(
+                        'Medication Reminder',
+                        'You have a medication due: Metformin 500mg',
+                        { type: 'warning', vibration: 'reminder' }
+                    );
+                }, times.remind - Date.now());
+
+                // Overdue
+                setTimeout(() => {
+                    this.showNotification(
+                        'Medication Overdue',
+                        'Metformin 500mg is now overdue',
+                        { type: 'urgent', vibration: 'urgent', requireInteraction: true }
+                    );
+                }, times.overdue - Date.now());
+
+                // Marked as missed
+                setTimeout(() => {
+                    // Auto-mark as missed and notify
+                    console.log('Medication automatically marked as missed');
+                }, times.missed - Date.now());
+            }
+        }
+
+        const notificationSystem = new MedicationNotificationSystem();
+
+        // ========================
+        // APP STATE
+        // ========================
+        let medications = [
+            {
+                id: 'med1',
+                name: 'Metformin 500mg',
+                dose: '1 tablet after meal',
+                time: '12:30 PM',
+                status: 'due',
+                source: 'in-app',
+                prescriber: 'Dr. Ahmed'
+            },
+            {
+                id: 'med2',
+                name: 'Aspirin 75mg',
+                dose: '1 tablet before breakfast',
+                time: '8:00 AM',
+                status: 'taken',
+                takenAt: '7:58 AM',
+                source: 'external',
+                prescriber: 'Dr. Ahmed'
+            },
+            {
+                id: 'med3',
+                name: 'Vitamin D 1000 IU',
+                dose: '1 capsule with breakfast',
+                time: '9:00 AM',
+                status: 'missed',
+                source: 'self',
+                prescriber: null
+            },
+            {
+                id: 'med4',
+                name: 'Atorvastatin 20mg',
+                dose: '1 tablet before bed',
+                time: '9:00 PM',
+                status: 'upcoming',
+                source: 'in-app',
+                prescriber: 'Dr. Sarah'
+            }
+        ];
+
+        let currentConfirmingMed = null;
+        let undoTimeout = null;
+
+        // ========================
+        // SAFETY CHECKS
+        // ========================
+        function checkForDuplicates() {
+            const medNames = medications.map(m => m.name.toLowerCase());
+            const duplicates = medNames.filter((name, index) => medNames.indexOf(name) !== index);
+            
+            if (duplicates.length > 0) {
+                showWarning(
+                    'Possible Duplicate Medication',
+                    `You have multiple entries for the same medication. Please review with your doctor.`,
+                    'danger'
+                );
+            }
+        }
+
+        function checkMissedPattern() {
+            const missedCount = medications.filter(m => m.status === 'missed').length;
+            if (missedCount >= 2) {
+                showWarning(
+                    'Multiple Missed Doses',
+                    `You have ${missedCount} missed doses today. Consider setting earlier reminders.`,
+                    'warning'
+                );
+            }
+        }
+
+        function showWarning(title, text, type = 'warning') {
+            const container = document.getElementById('warningsContainer');
+            const warning = document.createElement('div');
+            warning.className = `warning-banner ${type}`;
+            warning.innerHTML = `
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-content">
+                    <div class="warning-title">${title}</div>
+                    <div class="warning-text">${text}</div>
+                </div>
+            `;
+            container.appendChild(warning);
+        }
+
+        // ========================
+        // VIEW SWITCHING
+        // ========================
+        function switchMode(mode) {
+            const buttons = document.querySelectorAll('.mode-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('todayView').classList.remove('active');
+            document.getElementById('historyView').classList.remove('active');
+
+            if (mode === 'today') {
+                document.getElementById('todayView').classList.add('active');
+            } else {
+                document.getElementById('historyView').classList.add('active');
+            }
+        }
+
+        // ========================
+        // CONFIRMATION FLOW
+        // ========================
+        function openConfirmation(medId, isLate = false) {
+            const med = medications.find(m => m.id === medId);
+            if (!med) return;
+
+            currentConfirmingMed = { ...med, isLate };
+
+            document.getElementById('confirmMedName').textContent = med.name;
+            document.getElementById('confirmMedDose').textContent = med.dose;
+            
+            // Reset checkbox
+            document.getElementById('confirmCheckbox').classList.remove('checked');
+            document.getElementById('confirmBtn').disabled = true;
+
+            // Show bottom sheet
+            document.getElementById('confirmOverlay').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('confirmSheet').classList.add('active');
+            }, 10);
+
+            // Play sound
+            notificationSystem.playSound('default');
+            notificationSystem.vibrate('default');
+        }
+
+        function closeConfirmation() {
+            document.getElementById('confirmSheet').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('confirmOverlay').classList.remove('active');
+            }, 300);
+            currentConfirmingMed = null;
+        }
+
+        function toggleCheckbox() {
+            const checkbox = document.getElementById('confirmCheckbox');
+            const confirmBtn = document.getElementById('confirmBtn');
+            
+            checkbox.classList.toggle('checked');
+            confirmBtn.disabled = !checkbox.classList.contains('checked');
+
+            notificationSystem.playSound('success');
+            notificationSystem.vibrate('success');
+        }
+
+        function confirmTaken() {
+            if (!currentConfirmingMed) return;
+
+            const medId = currentConfirmingMed.id;
+            const med = medications.find(m => m.id === medId);
+            
+            if (med) {
+                med.status = 'taken';
+                med.takenAt = new Date().toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+            }
+
+            closeConfirmation();
+            
+            // Play success sound
+            notificationSystem.playSound('success');
+            notificationSystem.vibrate('success');
+
+            // Show undo toast
+            showUndoToast(medId);
+
+            // Update UI
+            updateNextDoseCard();
+            
+            // Schedule undo timeout
+            undoTimeout = setTimeout(() => {
+                hideUndoToast();
+                // Commit to database here
+                console.log('Medication confirmation committed');
+            }, 300000); // 5 minutes
+        }
+
+        // ========================
+        // UNDO SYSTEM
+        // ========================
+        let lastAction = null;
+
+        function showUndoToast(medId) {
+            lastAction = { type: 'taken', medId, time: Date.now() };
+            document.getElementById('undoToast').classList.add('show');
+            
+            setTimeout(() => {
+                hideUndoToast();
+            }, 300000); // 5 minutes
+        }
+
+        function hideUndoToast() {
+            document.getElementById('undoToast').classList.remove('show');
+            lastAction = null;
+        }
+
+        function undoAction() {
+            if (!lastAction) return;
+
+            clearTimeout(undoTimeout);
+            
+            const med = medications.find(m => m.id === lastAction.medId);
+            if (med) {
+                med.status = 'due';
+                delete med.takenAt;
+            }
+
+            hideUndoToast();
+            updateNextDoseCard();
+
+            notificationSystem.playSound('default');
+            notificationSystem.vibrate('default');
+            notificationSystem.showToast('Undone', 'Medication marked as not taken');
+        }
+
+        // ========================
+        // UI UPDATES
+        // ========================
+        function updateNextDoseCard() {
+            const nextMed = medications.find(m => m.status === 'due');
+            const card = document.getElementById('nextDoseCard');
+
+            if (!nextMed) {
+                card.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">✓</div>
+                        <div>All caught up! No medications due right now.</div>
+                        <div style="margin-top: 8px; font-size: 13px;">Next dose: Atorvastatin at 9:00 PM</div>
+                    </div>
+                `;
+                card.className = 'next-dose';
+            }
+        }
+
+        // ========================
+        // MISC
+        // ========================
+        function addMedication() {
+            notificationSystem.playSound('default');
+            notificationSystem.vibrate('default');
+            alert('Add Medication:\n\n• Enter medication details\n• Scan barcode\n• Mark source: In-app / External / OTC\n• Set reminder schedule\n• Doctor will see all medications with source labels');
+        }
+
+        // ========================
+        // INITIALIZE
+        // ========================
+        window.addEventListener('load', () => {
+            checkForDuplicates();
+            checkMissedPattern();
+
+            // Demo notification after 3 seconds
+            setTimeout(() => {
+                notificationSystem.showNotification(
+                    'Medication Due',
+                    'Time to take Metformin 500mg - 1 tablet after meal',
+                    { type: 'default', vibration: 'reminder' }
+                );
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

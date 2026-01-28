@@ -1,0 +1,226 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { costMonitor } from './middleware/costMonitoring.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const LOG_DIR = path.join(__dirname, 'logs');
+const AUDIT_LOG = path.join(LOG_DIR, 'audit.log');
+
+if (!fs.existsSync(LOG_DIR)) {
+    fs.mkdirSync(LOG_DIR);
+}
+
+const logAudit = (message) => {
+    const entry = `[${new Date().toISOString()}] ${message}\n`;
+    fs.appendFileSync(AUDIT_LOG, entry);
+};
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.use(helmet());
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
+app.use(express.json({ limit: '10mb' }));
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests'
+});
+app.use('/api/', limiter);
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_API_KEY');
+
+// Validation functions
+function validateMedicalIntent(prompt) {
+    const keywords = ['symptom', 'pain', 'fever', 'cough', 'diagnosis', 'treatment', 'medication', 'patient', 'medical', 'health'];
+    return keywords.some(k => prompt.toLowerCase().includes(k));
+}
+
+function enforceMedicalGuardrails(prompt) {
+    return `MEDICAL ASSISTANT: You are clinical triage support. MUST:
+1. Only provide medical info for triage
+2. Always recommend professional consultation
+3. Never give definitive diagnoses
+4. Flag emergencies immediately
+5. Decline non-medical requests
+
+USER: ${prompt}
+
+Remember: Support physician decision-making, not replace it.`;
+}
+
+function validateAiResponse(response) {
+    const prohibited = ['i am a doctor', 'this is a diagnosis', 'you definitely have', 'no need to see'];
+    return !prohibited.some(p => response.toLowerCase().includes(p));
+}
+
+// Health check
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        stats: costMonitor.getStats()
+    });
+});
+
+// Cost stats endpoint
+app.get('/api/stats/daily', (req, res) => {
+    res.json(costMonitor.getStats());
+});
+
+app.get('/api/stats/monthly', (req, res) => {
+    const stats = costMonitor.getMonthlyStats();
+    if (!stats) {
+        return res.status(404).json({ error: 'No monthly data available' });
+    }
+    res.json(stats);
+});
+
+// Main AI endpoint with monitoring
+app.post('/api/ai/generate', async (req, res) => {
+    try {
+        const { prompt, auditToken } = req.body;
+
+        if (!prompt || typeof prompt !== 'string') {
+            return res.status(400).json({ error: 'Invalid prompt' });
+        }
+
+        if (!auditToken || auditToken !== process.env.AUDIT_TOKEN) {
+            console.error('SECURITY: Unauthorized');
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+
+        if (!validateMedicalIntent(prompt)) {
+            logAudit(`REJECTED: Non-medical prompt from client. Hash: ${prompt.substring(0, 20)}...`);
+            return res.status(400).json({ error: 'Non-medical request blocked' });
+        }
+
+        // REDUNDANT EMERGENCY CHECK
+        const emergencyKeywords = ['chest pain', 'suicide', 'stroke', 'emergency', '1122'];
+        if (emergencyKeywords.some(k => prompt.toLowerCase().includes(k))) {
+            logAudit(`EMERGENCY: Detected in AI prompt. Redirecting.`);
+            return res.status(400).json({ error: 'EMERGENCY_REDIRECT' });
+        }
+
+        const guardedPrompt = enforceMedicalGuardrails(prompt);
+        logAudit(`REQUEST: AI generation initiated. Tokens: ${costMonitor.estimateTokens(guardedPrompt)}`);
+
+        // Estimate input tokens
+        const inputTokens = costMonitor.estimateTokens(guardedPrompt);
+
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(guardedPrompt);
+        const response = await result.response;
+        const text = response.text();
+
+        if (!validateAiResponse(text)) {
+            logAudit(`SAFETY: AI response blocked by backend filters.`);
+            return res.status(400).json({ error: 'Safety filter triggered' });
+        }
+
+        // Estimate output tokens
+        const outputTokens = costMonitor.estimateTokens(text);
+
+        // Log usage and get cost info
+        const costInfo = costMonitor.logRequest(inputTokens, outputTokens, 'generate');
+
+        logAudit(`SUCCESS: AI generated response. Cost: $${costInfo.requestCost.toFixed(6)}`);
+
+        console.log('✅ API Request:', {
+            timestamp: new Date().toISOString(),
+            inputTokens,
+            outputTokens,
+            requestCost: `$${costInfo.requestCost.toFixed(6)}`,
+            dailyTotal: `$${costInfo.dailyTotal.toFixed(4)}`
+        });
+
+        res.json({
+            response: text,
+            metadata: {
+                tokensUsed: costInfo.tokensUsed,
+                estimatedCost: costInfo.requestCost
+            }
+        });
+    } catch (error) {
+        console.error('AI Error:', error);
+        res.status(500).json({ error: 'Service unavailable' });
+    }
+});
+
+// Image analysis with monitoring
+app.post('/api/ai/analyze-image', async (req, res) => {
+    try {
+        const { imageData, imageType, prompt, auditToken } = req.body;
+
+        if (!auditToken || auditToken !== process.env.AUDIT_TOKEN) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+        const imageParts = [{
+            inlineData: {
+                data: imageData.split(',')[1],
+                mimeType: imageType
+            }
+        }];
+
+        const guardedPrompt = `MEDICAL IMAGE ANALYSIS: Analyze medical document/test. Provide:
+1. Document type
+2. Key data points
+3. Flagged abnormalities
+4. Recommend physician review
+
+USER: ${prompt}`;
+
+        const inputTokens = costMonitor.estimateTokens(guardedPrompt) + 1000; // +1000 for image
+
+        const result = await model.generateContent([guardedPrompt, ...imageParts]);
+        const response = await result.response;
+        const text = response.text();
+
+        const outputTokens = costMonitor.estimateTokens(text);
+        const costInfo = costMonitor.logRequest(inputTokens, outputTokens, 'analyze-image');
+
+        console.log('✅ Image Analysis:', {
+            timestamp: new Date().toISOString(),
+            inputTokens,
+            outputTokens,
+            requestCost: `$${costInfo.requestCost.toFixed(6)}`
+        });
+
+        res.json({
+            response: text,
+            metadata: {
+                tokensUsed: costInfo.tokensUsed,
+                estimatedCost: costInfo.requestCost
+            }
+        });
+    } catch (error) {
+        console.error('Image Error:', error);
+        res.status(500).json({ error: 'Analysis failed' });
+    }
+});
+
+app.use((err, req, res, next) => {
+    console.error('Server Error:', err);
+    res.status(500).json({ error: 'Internal error' });
+});
+
+app.listen(PORT, () => {
+    console.log(`🚀 Alshifa AI Medical Assistant Backend running on port ${PORT}`);
+    console.log(`📊 Daily stats:`, costMonitor.getStats());
+});
+
+export default app;

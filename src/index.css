@@ -1,0 +1,6 @@
+/* Urdu RTL Support - Must come before Tailwind */
+@import './styles/urdu-rtl.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

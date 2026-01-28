@@ -1,0 +1,141 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: alshifa-db
+    environment:
+      POSTGRES_USER: alshifa
+      POSTGRES_PASSWORD: alshifa_password_change_this
+      POSTGRES_DB: alshifa
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    networks:
+      - alshifa-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alshifa"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: alshifa-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - alshifa-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: alshifa-backend
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://alshifa:alshifa_password_change_this@postgres:5432/alshifa
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - alshifa-network
+    volumes:
+      - ./backend/logs:/app/logs
+    restart: unless-stopped
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: alshifa-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:3001
+      REACT_APP_ENVIRONMENT: production
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - alshifa-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (Optional - for production)
+  nginx:
+    image: nginx:alpine
+    container_name: alshifa-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - alshifa-network
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  alshifa-network:
+    driver: bridge
+
+# ==============================================
+# USAGE INSTRUCTIONS
+# ==============================================
+# 
+# Development:
+#   docker-compose up -d postgres redis
+#   # Then run frontend and backend locally
+# 
+# Full Stack (with Docker):
+#   docker-compose up -d
+# 
+# Production (with Nginx):
+#   docker-compose --profile production up -d
+# 
+# Stop all services:
+#   docker-compose down
+# 
+# View logs:
+#   docker-compose logs -f [service_name]
+# 
+# Rebuild after code changes:
+#   docker-compose up -d --build
+# 
+# Database backup:
+#   docker exec alshifa-db pg_dump -U alshifa alshifa > backup.sql
+# 
+# Database restore:
+#   docker exec -i alshifa-db psql -U alshifa alshifa < backup.sql

@@ -1,0 +1,236 @@
+/* guided-localization.css */
+.guided-localization {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #10b981);
+    transition: width 0.3s ease;
+}
+
+.question-number {
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.question-text {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #1f2937;
+    margin-bottom: 2rem;
+}
+
+.options-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.option-button {
+    padding: 1.25rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.option-button:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.option-button.selected {
+    border-color: #3b82f6;
+    background: #dbeafe;
+    font-weight: 600;
+}
+
+.back-button,
+.cancel-button {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.back-button:hover,
+.cancel-button:hover {
+    background: #f3f4f6;
+}
+
+/* Results Styles */
+.guided-results {
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.results-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.results-header h2 {
+    margin-top: 1rem;
+    color: #1f2937;
+}
+
+.suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.suggestion-card {
+    position: relative;
+    padding: 1.5rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.suggestion-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.suggestion-card.high-priority {
+    border-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.red-flag-badge {
+    position: absolute;
+    top: -10px;
+    right: 1rem;
+    background: #dc2626;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.suggestion-rank {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    width: 32px;
+    height: 32px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.suggestion-content {
+    margin-left: 3rem;
+}
+
+.suggestion-content h3 {
+    margin: 0 0 0.5rem 0;
+    color: #1f2937;
+    font-size: 1.125rem;
+}
+
+.confidence-bar {
+    position: relative;
+    height: 24px;
+    background: #f3f4f6;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+}
+
+.confidence-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #3b82f6);
+    transition: width 0.5s ease;
+}
+
+.confidence-bar span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.reasoning {
+    color: #64748b;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.common-causes {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.common-causes small {
+    color: #64748b;
+}
+
+.select-btn {
+    margin-top: 1rem;
+    padding: 8px 16px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.cancel-btn {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    font-weight: 600;
+    color: #475569;
+}
+
+.no-suggestions {
+    text-align: center;
+    padding: 2.5rem;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1px dashed #cbd5e1;
+    margin-bottom: 1.5rem;
+}

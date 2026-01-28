@@ -1,0 +1,413 @@
+/**
+ * clinical-insights.css
+ * Styles for the Clinical Insights Panel
+ */
+
+.clinical-insights-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.clinical-insights-panel.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    text-align: center;
+}
+
+.insights-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.insights-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.section-header.urgent {
+    color: #dc2626;
+}
+
+.section-header .icon {
+    color: #6b7280;
+}
+
+/* Red Flag Alerts */
+.red-flag-alert {
+    border-left: 4px solid;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 6px;
+}
+
+.red-flag-alert.severity-immediate {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+}
+
+.red-flag-alert.severity-urgent {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.red-flag-alert.severity-monitor {
+    border-left-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.flag-severity {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.severity-immediate .flag-severity {
+    color: #dc2626;
+}
+
+.severity-urgent .flag-severity {
+    color: #f59e0b;
+}
+
+.severity-monitor .flag-severity {
+    color: #3b82f6;
+}
+
+.flag-content p {
+    margin: 0.25rem 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.flag-content strong {
+    font-weight: 600;
+    color: #374151;
+}
+
+.criteria {
+    margin: 0.5rem 0 0 1.5rem;
+    padding-left: 0;
+    list-style: disc;
+}
+
+.criteria li {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0.25rem 0;
+}
+
+/* Pattern Card */
+.pattern-card {
+    background: #f3f4f6;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.pattern-type,
+.pattern-conditions,
+.pattern-urgency {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.pattern-type:last-child,
+.pattern-conditions:last-child,
+.pattern-urgency:last-child {
+    margin-bottom: 0;
+}
+
+.pattern-type .label,
+.pattern-conditions .label,
+.pattern-urgency .label {
+    font-weight: 600;
+    color: #6b7280;
+    min-width: 80px;
+}
+
+.pattern-type .value,
+.pattern-conditions .value {
+    color: #1f2937;
+}
+
+.urgency-immediate {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.urgency-urgent {
+    color: #f59e0b;
+    font-weight: 700;
+}
+
+.urgency-routine {
+    color: #10b981;
+    font-weight: 600;
+}
+
+/* Differential List */
+.differential-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.differential-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #f9fafb;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+.differential-item:hover {
+    background: #f3f4f6;
+}
+
+.differential-item .rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.differential-item .diagnosis {
+    font-size: 0.875rem;
+    color: #1f2937;
+}
+
+/* Next Steps */
+.next-steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.next-steps-list li {
+    padding: 0.5rem;
+    padding-left: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: #eff6ff;
+    border-left: 3px solid #3b82f6;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #1f2937;
+}
+
+.next-steps-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* Zone Cards */
+.zone-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.zone-detail-card {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.zone-detail-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.zone-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+    gap: 0.5rem;
+}
+
+.zone-header h4 {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2937;
+    line-height: 1.4;
+    flex: 1;
+}
+
+.intensity-badge {
+    background: #dc2626;
+    color: white;
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.clinical-term {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-style: italic;
+    margin: 0.25rem 0;
+}
+
+.common-diagnoses {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+.common-diagnoses small {
+    display: block;
+    color: #6b7280;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.common-diagnoses span {
+    color: #374151;
+}
+
+/* RTL Support */
+[dir="rtl"] .red-flag-alert {
+    border-left: none;
+    border-right: 4px solid;
+}
+
+[dir="rtl"] .red-flag-alert.severity-immediate {
+    border-right-color: #dc2626;
+}
+
+[dir="rtl"] .red-flag-alert.severity-urgent {
+    border-right-color: #f59e0b;
+}
+
+[dir="rtl"] .red-flag-alert.severity-monitor {
+    border-right-color: #3b82f6;
+}
+
+[dir="rtl"] .criteria {
+    margin: 0.5rem 1.5rem 0 0;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+[dir="rtl"] .next-steps-list li {
+    border-left: none;
+    border-right: 3px solid #3b82f6;
+    padding-left: 0.5rem;
+    padding-right: 0.75rem;
+}
+
+[dir="rtl"] .section-header {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .flag-severity,
+[dir="rtl"] .pattern-type,
+[dir="rtl"] .pattern-conditions,
+[dir="rtl"] .pattern-urgency {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .differential-item {
+    flex-direction: row-reverse;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .clinical-insights-panel {
+        border-radius: 0;
+        max-height: none;
+    }
+
+    .zone-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .zone-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .intensity-badge {
+        align-self: flex-start;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .clinical-insights-panel {
+        box-shadow: none;
+        border: 1px solid #e5e7eb;
+    }
+
+    .red-flag-alert {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .zone-detail-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+/* Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.insights-section {
+    animation: slideIn 0.3s ease-out;
+}
+
+.red-flag-alert {
+    animation: slideIn 0.3s ease-out;
+}

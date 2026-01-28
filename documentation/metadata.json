@@ -1,0 +1,8 @@
+{
+  "name": "Alshifa AI Medical Assistant",
+  "description": "A multilingual AI-driven medical triage assistant. Features a voice-enabled intake bot for gathering patient history in English and Urdu with built-in medical safety protocols and professional triage summaries.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}

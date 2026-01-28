@@ -1,0 +1,124 @@
+diff --git a/src/services/v2/intake/IntakeOrchestrator.ts b/src/services/v2/intake/IntakeOrchestrator.ts
+index 1234567..abcdefg 100644
+--- a/src/services/v2/intake/IntakeOrchestrator.ts
++++ b/src/services/v2/intake/IntakeOrchestrator.ts
+@@ -1,6 +1,11 @@
+ import { EncounterIntake } from '../models/EncounterIntake';
+ import { HeadacheTree } from '../trees/HeadacheTree';
++import { ChestPainTree } from '../trees/ChestPainTree';
++import { AbdominalPainTree } from '../trees/AbdominalPainTree';
++import { FeverTree } from '../trees/FeverTree';
++import { RespiratoryTree } from '../trees/RespiratoryTree';
++import { ComplaintTree } from '../trees/ComplaintTree';
+ 
+ export interface IntakeCallbacks {
+-  currentLanguage: 'en' | 'ur';
++  currentLanguage: 'en' | 'ur' | 'roman';
+   askQuestion: (text: string, type: string, options?: any) => Promise<any>;
+@@ -140,8 +145,104 @@ export class IntakeOrchestrator {
+   }
+ 
+   private async runComplaintTree(): Promise<void> {
+-    const tree = new HeadacheTree();
++    const tree = this.selectTreeForComplaint(this.encounter.chiefComplaint);
++    
++    if (!tree) {
++      throw new Error(`No complaint tree found for: ${this.encounter.chiefComplaint}`);
++    }
++    
+     await tree.ask(this.encounter, this.callbacks);
+   }
++
++  /**
++   * Select the appropriate complaint tree based on chief complaint
++   */
++  private selectTreeForComplaint(complaint: string): ComplaintTree | null {
++    if (!complaint) {
++      console.warn('No chief complaint provided');
++      return null;
++    }
++
++    const complaintLower = complaint.toLowerCase();
++    
++    // HEADACHE
++    if (complaintLower.includes('headache') || 
++        complaintLower.includes('head pain') ||
++        complaintLower.includes('سر درد') ||
++        complaintLower.includes('sar dard')) {
++      console.log('Selected: HeadacheTree');
++      return new HeadacheTree();
++    }
++    
++    // CHEST PAIN
++    if (complaintLower.includes('chest pain') || 
++        complaintLower.includes('chest pressure') ||
++        complaintLower.includes('سینے میں درد') ||
++        complaintLower.includes('seene mein dard')) {
++      console.log('Selected: ChestPainTree');
++      return new ChestPainTree();
++    }
++    
++    // ABDOMINAL PAIN
++    if (complaintLower.includes('abdominal') || 
++        complaintLower.includes('stomach') ||
++        complaintLower.includes('belly') ||
++        complaintLower.includes('پیٹ') ||
++        complaintLower.includes('pet')) {
++      console.log('Selected: AbdominalPainTree');
++      return new AbdominalPainTree();
++    }
++    
++    // FEVER
++    if (complaintLower.includes('fever') || 
++        complaintLower.includes('temperature') ||
++        complaintLower.includes('بخار') ||
++        complaintLower.includes('bukhar')) {
++      console.log('Selected: FeverTree');
++      return new FeverTree();
++    }
++    
++    // RESPIRATORY
++    if (complaintLower.includes('cough') || 
++        complaintLower.includes('breath') ||
++        complaintLower.includes('breathing') ||
++        complaintLower.includes('wheez') ||
++        complaintLower.includes('کھانسی') ||
++        complaintLower.includes('khansi') ||
++        complaintLower.includes('سانس') ||
++        complaintLower.includes('saans')) {
++      console.log('Selected: RespiratoryTree');
++      return new RespiratoryTree();
++    }
++    
++    // FALLBACK
++    console.warn(`No specific tree for "${complaint}", using HeadacheTree as fallback`);
++    return new HeadacheTree();
++  }
++
++  /**
++   * Run body mapping step (optional but recommended)
++   */
++  async runBodyMapping(): Promise<any> {
++    return new Promise((resolve) => {
++      if (this.callbacks.showBodyMap !== undefined) {
++        this.callbacks.showBodyMap = true;
++      }
++      
++      const originalCallback = this.callbacks.onLocationSelected;
++      
++      this.callbacks.onLocationSelected = (location: any) => {
++        this.encounter.bodyLocation = location;
++        
++        if (this.callbacks.showBodyMap !== undefined) {
++          this.callbacks.showBodyMap = false;
++        }
++        
++        if (originalCallback) {
++          originalCallback(location);
++        }
++        
++        resolve(location);
++      };
++    });
++  }
+ }

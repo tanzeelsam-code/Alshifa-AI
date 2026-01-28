@@ -1,0 +1,375 @@
+/* BodyModel.css */
+
+.body-model-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 8px;
+  background: #ECF0F1;
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.view-toggle button {
+  padding: 12px 32px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 16px;
+  color: #7F8C8D;
+  transition: all 200ms ease;
+}
+
+.view-toggle button.active {
+  background: #16A085;
+  color: white;
+  box-shadow: 0 2px 8px rgba(22, 160, 133, 0.3);
+}
+
+.view-toggle button:hover:not(.active) {
+  background: #D5DBDB;
+}
+
+.body-svg-wrapper {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.body-svg {
+  max-width: 400px;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.body-zone {
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.body-zone:hover {
+  filter: brightness(1.1);
+  stroke-width: 3;
+}
+
+.body-zone:active {
+  transform: scale(0.98);
+}
+
+/* Clinical Insights Panel */
+.clinical-insights-panel {
+  flex: 1;
+  background: white;
+  border: 2px solid #ECF0F1;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  min-width: 300px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #E8F5F1;
+  border-bottom: 2px solid #16A085;
+}
+
+.panel-header .icon {
+  font-size: 24px;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2C3E50;
+}
+
+.panel-content {
+  padding: 20px;
+}
+
+.empty-state {
+  color: #95A5A6;
+  font-style: italic;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.insights h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #16A085;
+}
+
+.insight-text {
+  margin: 0;
+  line-height: 1.6;
+  color: #2C3E50;
+}
+
+/* Zoom Modal */
+.zoom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.zoom-modal {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #ECF0F1;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 200ms ease;
+}
+
+.close-button:hover {
+  background: #E74C3C;
+  color: white;
+  transform: rotate(90deg);
+}
+
+.zoom-modal h2 {
+  margin: 0 0 24px 0;
+  font-size: 24px;
+  color: #2C3E50;
+}
+
+.subzone-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.subzone-button {
+  padding: 16px 20px;
+  border: 2px solid #ECF0F1;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: #2C3E50;
+  transition: all 200ms ease;
+}
+
+.subzone-button:hover {
+  border-color: #16A085;
+  background: #E8F5F1;
+}
+
+.subzone-button.selected {
+  border-color: #16A085;
+  background: #16A085;
+  color: white;
+}
+
+/* Controls */
+.body-model-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.zoom-button,
+.secondary-button {
+  padding: 12px 24px;
+  border: 2px solid #16A085;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.zoom-button {
+  background: #16A085;
+  color: white;
+}
+
+.zoom-button:hover {
+  background: #138D75;
+  box-shadow: 0 4px 12px rgba(22, 160, 133, 0.3);
+}
+
+.secondary-button {
+  background: #E8F5F1;
+  color: #16A085;
+}
+
+.secondary-button:hover {
+  background: #16A085;
+  color: white;
+}
+
+/* Selected Zones List */
+.selected-zones-list {
+  width: 100%;
+  max-width: 500px;
+  background: white;
+  border: 2px solid #ECF0F1;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.selected-zones-list h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2C3E50;
+}
+
+.selected-zones-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.selected-zones-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #E8F5F1;
+  border-radius: 8px;
+  border-left: 4px solid #16A085;
+}
+
+.zone-name {
+  font-weight: 500;
+  color: #2C3E50;
+}
+
+.remove-button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #E74C3C;
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 200ms ease;
+}
+
+.remove-button:hover {
+  background: #C0392B;
+  transform: scale(1.1);
+}
+
+/* Uncertain Button */
+.uncertain-button {
+  width: 100%;
+  max-width: 500px;
+  padding: 16px 24px;
+  border: 2px dashed #BDC3C7;
+  background: white;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 16px;
+  color: #7F8C8D;
+  transition: all 200ms ease;
+}
+
+.uncertain-button:hover {
+  border-color: #F39C12;
+  background: #FEF5E7;
+  color: #F39C12;
+}
+
+.uncertain-button .icon {
+  font-size: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .body-svg-wrapper {
+    flex-direction: column;
+  }
+
+  .clinical-insights-panel {
+    width: 100%;
+  }
+
+  .body-model-controls {
+    width: 100%;
+  }
+
+  .zoom-button,
+  .secondary-button {
+    flex: 1;
+  }
+
+  .subzone-selector {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Animation Classes */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}

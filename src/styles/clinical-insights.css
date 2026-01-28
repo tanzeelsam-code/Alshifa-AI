@@ -1,0 +1,243 @@
+/* src/styles/clinical-insights.css */
+.clinical-insights-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+}
+
+.clinical-insights-panel.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    text-align: center;
+    color: #9ca3af;
+}
+
+.insights-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.insights-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.section-header.urgent {
+    color: #dc2626;
+}
+
+.section-header .icon {
+    color: #6b7280;
+}
+
+.red-flag-alert {
+    border-left: 4px solid;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 6px;
+    background: #fef2f2;
+}
+
+.red-flag-alert.severity-immediate {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+}
+
+.red-flag-alert.severity-urgent {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.red-flag-alert.severity-monitor {
+    border-left-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.flag-severity {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.flag-content p {
+    margin: 0.25rem 0;
+    font-size: 0.875rem;
+}
+
+.criteria {
+    margin: 0.5rem 0 0 1.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.pattern-card {
+    background: #f3f4f6;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.pattern-type,
+.pattern-conditions,
+.pattern-urgency {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.pattern-type .label,
+.pattern-conditions .label,
+.pattern-urgency .label {
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.differential-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.differential-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #f9fafb;
+    border-radius: 6px;
+}
+
+.differential-item .rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.next-steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.next-steps-list li {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #eff6ff;
+    border-left: 3px solid #3b82f6;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.zone-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.zone-detail-card {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.zone-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.zone-header h4 {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.intensity-badge {
+    background: #dc2626;
+    color: white;
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.clinical-term {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-style: italic;
+    margin: 0.25rem 0;
+}
+
+.common-diagnoses {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.common-diagnoses small {
+    color: #6b7280;
+    font-weight: 600;
+    margin-right: 0.25rem;
+}
+
+/* RTL Support */
+[dir="rtl"] .red-flag-alert {
+    border-left: none;
+    border-right: 4px solid;
+}
+
+[dir="rtl"] .red-flag-alert.severity-immediate {
+    border-right-color: #dc2626;
+}
+
+[dir="rtl"] .red-flag-alert.severity-urgent {
+    border-right-color: #f59e0b;
+}
+
+[dir="rtl"] .red-flag-alert.severity-monitor {
+    border-right-color: #3b82f6;
+}
+
+[dir="rtl"] .criteria {
+    margin: 0.5rem 1.5rem 0 0;
+}
+
+[dir="rtl"] .next-steps-list li {
+    border-left: none;
+    border-right: 3px solid #3b82f6;
+}
+
+[dir="rtl"] .section-header {
+    flex-direction: row-reverse;
+}
