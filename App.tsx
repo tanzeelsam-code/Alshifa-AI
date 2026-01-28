@@ -111,57 +111,58 @@ const App: React.FC = () => {
   // ============================================================================
   // AUTHENTICATION CHECK ON MOUNT (SIMPLIFIED - NO DEADLOCK)
   // ============================================================================
+  // ============================================================================
+  // AUTHENTICATION SYNC (Supabase Single Source of Truth)
+  // ============================================================================
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Initialize storage with seed data if empty
-        StorageService.initialize();
-
-        const currentUserId = localStorage.getItem('alshifa_current_user');
-
-        if (!currentUserId) {
-          console.log('🔒 [Auth] No user session found');
-          return;
-        }
-
-        const users = StorageService.loadItem<User[]>('alshifa_users', true);
-        if (!users) {
-          console.warn('🔒 [Auth] Users data missing');
-          localStorage.removeItem('alshifa_current_user');
-          return;
-        }
-
-        const foundUser = users.find((u: User) => u.id === currentUserId);
-
-        if (foundUser) {
-          console.log(`✅ [Auth] User authenticated: ${foundUser.name} (${foundUser.role})`);
-          setLoggedInUser(foundUser);
-
-          if (foundUser.role === Role.PATIENT) {
-            const [meds, summaries] = await Promise.all([
-              MedicationService.getForPatient(foundUser.id!),
-              SummaryService.getSummaries(foundUser.id!, foundUser.role)
-            ]);
-            setAllMedications(meds);
-            setAllPatientSummaries(summaries);
+    const syncAuth = async () => {
+      if (authUser && !loggedInUser) {
+        console.log(`🔄 [Auth] Syncing Supabase user: ${authUser.email} (${authUser.role})`);
+        
+        // Map SupabaseUserProfile to legacy User type
+        const user: User = {
+          id: authUser.uid,
+          name: authUser.displayName || authUser.email.split('@')[0],
+          email: authUser.email,
+          role: authUser.role,
+          language: language,
+          password: '***', // Secret
+          account: {
+            id: authUser.uid,
+            fullName: authUser.displayName || authUser.email.split('@')[0],
+            dateOfBirth: '2000-01-01',
+            sexAtBirth: 'prefer_not_to_say',
+            country: 'Pakistan',
+            language: language,
+            createdAt: authUser.createdAt
           }
+        };
 
-          // Check disclaimer acceptance
-          const disclaimerStatus = localStorage.getItem('alshifa_disclaimer_accepted');
-          setDisclaimerAccepted(disclaimerStatus === 'true');
-        } else {
-          console.warn('🔒 [Auth] User not found in database');
-          localStorage.removeItem('alshifa_current_user');
+        setLoggedInUser(user);
+
+        // Load secondary data
+        if (user.role === Role.PATIENT) {
+          const [meds, summaries] = await Promise.all([
+            MedicationService.getForPatient(user.id!),
+            SummaryService.getSummaries(user.id!, user.role)
+          ]);
+          setAllMedications(meds);
+          setAllPatientSummaries(summaries);
         }
-      } catch (error) {
-        console.error('🔒 [Auth] Authentication check failed:', error);
-      } finally {
-        // isLoadingAuth is handled by useAuth
+
+        // Check disclaimer
+        const disclaimerStatus = localStorage.getItem('alshifa_disclaimer_accepted');
+        setDisclaimerAccepted(disclaimerStatus === 'true');
+      } else if (!authUser && loggedInUser) {
+        // Handle external logout (e.g. from Supabase dashboard or another tab)
+        console.log('🔓 [Auth] Supabase session lost - logging out');
+        setLoggedInUser(null);
+        setDisclaimerAccepted(false);
       }
     };
 
-    checkAuth();
-  }, []);
+    syncAuth();
+  }, [authUser, loggedInUser]);
 
   // ============================================================================
   // SESSION TIMEOUT (30 minutes of inactivity)
@@ -416,10 +417,11 @@ const App: React.FC = () => {
       case AppState.LOGIN: return <Login role={currentUser?.role!} onLogin={async (creds) => {
         const loadingToast = toast.loading('Authenticating...');
         try {
-          await sbLogin(creds.identifier, creds.password!);
-
-          // The AuthContext will handle state updates and profile fetching
-          // handleAutoLogin will be called by the useEffect listener for authUser
+          // Normalize email for Supabase
+          const identifier = creds.identifier;
+          const email = identifier.includes('@') ? identifier : `${identifier.replace(/\s+/g, '').toLowerCase()}@alshifa.ai`;
+          
+          await sbLogin(email, creds.password!);
           toast.dismiss(loadingToast);
         } catch (error: any) {
           console.error('Login error:', error);
@@ -431,10 +433,14 @@ const App: React.FC = () => {
       case AppState.REGISTRATION: return <RegistrationForm user={currentUser!} onComplete={async (newUser) => {
         const loadingToast = toast.loading('Creating account...');
         try {
-          await sbRegister(newUser.mobile || newUser.name!, newUser.password!, newUser.role as Role, newUser.name);
+          // Normalize email for Supabase (must be valid email format)
+          const identifier = newUser.mobile || newUser.name || `user_${Date.now()}`;
+          const email = identifier.includes('@') ? identifier : `${identifier.replace(/\s+/g, '').toLowerCase()}@alshifa.ai`;
+          
+          await sbRegister(email, newUser.password!, newUser.role as Role, newUser.name);
           toast.dismiss(loadingToast);
-          toast.success('Registration successful! Please login.');
-          setAppState(AppState.LOGIN);
+          toast.success('Registration successful!');
+          // useEffect will catch authUser change and setLoggedInUser
         } catch (error: any) {
           console.error('Registration error:', error);
           toast.dismiss(loadingToast);

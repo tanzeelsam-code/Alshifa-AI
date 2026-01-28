@@ -13,6 +13,7 @@ import {
     SupabaseUserProfile as UserProfile,
     resetPassword as supabaseResetPassword,
 } from '../src/services/supabase/auth.service';
+import { supabase } from '../src/lib/supabase';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -72,15 +73,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
             if (sbUser) {
                 try {
-                    // In a more robust setup, we'd fetch the profile here
-                    // For now, we rely on the initial login/register to set it or fetch it manually
                     const localUser = localStorage.getItem('alshifa_current_user');
                     if (localUser) {
-                        setUser(JSON.parse(localUser));
+                        try {
+                            setUser(JSON.parse(localUser));
+                        } catch (e) {
+                            console.warn('Malformed local user data');
+                        }
+                    }
+
+                    // Always fetch fresh profile if session exists and state is empty or on init
+                    if (!user) {
+                        const { data: profile } = await supabase
+                            .from('users')
+                            .select('*')
+                            .eq('id', sbUser.id)
+                            .single();
+
+                        if (profile) {
+                            const userProfile: UserProfile = {
+                                uid: profile.id,
+                                email: profile.email,
+                                role: profile.role,
+                                displayName: profile.display_name,
+                                emailVerified: !!sbUser.email_confirmed_at,
+                                createdAt: profile.created_at,
+                                lastLoginAt: sbUser.last_sign_in_at || profile.created_at,
+                            };
+                            setUser(userProfile);
+                            localStorage.setItem('alshifa_current_user', JSON.stringify(userProfile));
+                        }
                     }
                 } catch (error) {
                     console.error('Failed to get user profile:', error);
-                    setUser(null);
                 }
             } else {
                 setUser(null);
