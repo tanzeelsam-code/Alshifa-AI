@@ -34,8 +34,9 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ user, onComplete, o
   };
 
   const validatePassword = (pass: string) => {
-    // For testing: enforce 4-6 character limit
-    return pass.length >= 4 && pass.length <= 6;
+    // Requirements: 8+ characters, at least 1 uppercase, 1 lowercase, and 1 digit
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return regex.test(pass);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -197,12 +198,12 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ user, onComplete, o
           </div>
         )}
         <div className="mb-4 mt-4">
-          <label className="block text-sm font-medium mb-2">{strings.password}</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-3 py-2 border rounded-md dark:bg-slate-700" required />
+          <label htmlFor="reg-passwordBalance" className="block text-sm font-medium mb-2">{strings.password}</label>
+          <input type="password" id="reg-passwordBalance" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-3 py-2 border rounded-md dark:bg-slate-700" required />
         </div>
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">{strings.confirmPassword}</label>
-          <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full px-3 py-2 border rounded-md dark:bg-slate-700" required />
+          <label htmlFor="reg-confirmPassword" className="block text-sm font-medium mb-2">{strings.confirmPassword}</label>
+          <input type="password" id="reg-confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full px-3 py-2 border rounded-md dark:bg-slate-700" required />
         </div>
         <div className="flex gap-4">
           <button type="button" onClick={onBack} className="w-full bg-slate-500 text-white font-bold py-2 rounded-md">{strings.back}</button>
