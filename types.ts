@@ -78,7 +78,8 @@ export interface Visit {
 export interface User {
   id?: string;
   name: string;
-  mobile?: string;
+  mobile: string;      // Mandatory for real-time accounts
+  idCardNo: string;    // Mandatory for real-time accounts
   role: Role;
   language: Language;
   password?: string;
@@ -90,11 +91,12 @@ export interface PatientAccount {
   id: string;
   fullName: string;
   dateOfBirth: string;   // ISO format
+  idCardNo: string;      // National ID / CNIC
   sexAtBirth: 'male' | 'female' | 'intersex' | 'prefer_not_to_say';
   country: string;
   language: string;
   createdAt: string;
-  phoneNumber?: string;
+  phoneNumber: string;   // Mandatory
   email?: string;
 }
 

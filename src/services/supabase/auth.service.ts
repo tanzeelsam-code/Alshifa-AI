@@ -11,6 +11,9 @@ export interface SupabaseUserProfile {
     email: string;
     role: Role;
     displayName?: string;
+    mobile?: string;
+    idCardNo?: string;
+    dateOfBirth?: string;
     emailVerified: boolean;
     createdAt: string;
     lastLoginAt: string;
@@ -23,7 +26,10 @@ export const registerUser = async (
     email: string,
     password: string,
     role: Role,
-    displayName?: string
+    displayName?: string,
+    mobile?: string,
+    idCardNo?: string,
+    dateOfBirth?: string
 ): Promise<SupabaseUserProfile> => {
     try {
         // Create authentication account
@@ -48,6 +54,9 @@ export const registerUser = async (
             email: authData.user.email!,
             role,
             displayName: displayName || '',
+            mobile,
+            idCardNo,
+            dateOfBirth,
             emailVerified: !!authData.user.email_confirmed_at,
             createdAt: authData.user.created_at,
             lastLoginAt: authData.user.last_sign_in_at || authData.user.created_at,
@@ -62,6 +71,9 @@ export const registerUser = async (
                 email: userProfile.email,
                 role: userProfile.role,
                 display_name: userProfile.displayName,
+                mobile: userProfile.mobile,
+                id_card_no: userProfile.idCardNo,
+                date_of_birth: userProfile.dateOfBirth,
                 created_at: userProfile.createdAt,
             });
 

@@ -118,22 +118,25 @@ const App: React.FC = () => {
     const syncAuth = async () => {
       if (authUser && !loggedInUser) {
         console.log(`🔄 [Auth] Syncing Supabase user: ${authUser.email} (${authUser.role})`);
-        
+
         // Map SupabaseUserProfile to legacy User type
         const user: User = {
           id: authUser.uid,
           name: authUser.displayName || authUser.email.split('@')[0],
-          email: authUser.email,
+          mobile: authUser.mobile || '00000',
+          idCardNo: authUser.idCardNo || 'PENDING',
           role: authUser.role,
           language: language,
           password: '***', // Secret
           account: {
             id: authUser.uid,
             fullName: authUser.displayName || authUser.email.split('@')[0],
-            dateOfBirth: '2000-01-01',
+            dateOfBirth: authUser.dateOfBirth || '2000-01-01',
+            idCardNo: authUser.idCardNo || 'PENDING',
             sexAtBirth: 'prefer_not_to_say',
             country: 'Pakistan',
             language: language,
+            phoneNumber: authUser.mobile || '00000',
             createdAt: authUser.createdAt
           }
         };
@@ -420,7 +423,7 @@ const App: React.FC = () => {
           // Normalize email for Supabase
           const identifier = creds.identifier;
           const email = identifier.includes('@') ? identifier : `${identifier.replace(/\s+/g, '').toLowerCase()}@alshifa.ai`;
-          
+
           await sbLogin(email, creds.password!);
           toast.dismiss(loadingToast);
         } catch (error: any) {
@@ -434,10 +437,22 @@ const App: React.FC = () => {
         const loadingToast = toast.loading('Creating account...');
         try {
           // Normalize email for Supabase (must be valid email format)
-          const identifier = newUser.mobile || newUser.name || `user_${Date.now()}`;
-          const email = identifier.includes('@') ? identifier : `${identifier.replace(/\s+/g, '').toLowerCase()}@alshifa.ai`;
-          
-          await sbRegister(email, newUser.password!, newUser.role as Role, newUser.name);
+          // Use ID Card No as part of the unique email identifier for patients
+          const identifier = (newUser.role === Role.PATIENT && newUser.idCardNo)
+            ? newUser.idCardNo.replace(/[-\s]/g, '')
+            : (newUser.mobile || newUser.name || `user_${Date.now()}`);
+
+          const email = identifier.includes('@') ? identifier : `${identifier.toLowerCase()}@alshifa.ai`;
+
+          await sbRegister(
+            email,
+            newUser.password!,
+            newUser.role as Role,
+            newUser.name,
+            newUser.mobile,
+            newUser.idCardNo,
+            newUser.account?.dateOfBirth
+          );
           toast.dismiss(loadingToast);
           toast.success('Registration successful!');
           // useEffect will catch authUser change and setLoggedInUser

@@ -22,8 +22,9 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ user, onComplete, o
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [dob, setDob] = useState('');
+  const [idCardNo, setIdCardNo] = useState('');
   const [sex, setSex] = useState<'male' | 'female' | 'intersex' | 'prefer_not_to_say'>('prefer_not_to_say');
-  const [country, setCountry] = useState('');
+  const [country, setCountry] = useState('Pakistan');
 
   const { language } = useLanguage();
   const strings = uiStrings[language];
@@ -55,41 +56,28 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ user, onComplete, o
     }
 
     if (user.role === Role.PATIENT) {
-      // Simplified validation: require EITHER name OR mobile (4+ digits), plus password
-      const hasName = name.trim().length > 0;
-      const hasMobile = mobile.trim().length >= 4;
-
-      if (!hasName && !hasMobile) {
-        toast.error('Please provide either a name or mobile number.');
+      if (!name.trim() || !mobile.trim() || !dob.trim() || !idCardNo.trim() || !country.trim()) {
+        toast.error(strings.fillAllFields);
         return;
       }
 
-      // 3. Mobile Validation (only if mobile is provided)
-      if (hasMobile && !validateMobile(mobile)) {
+      if (!validateMobile(mobile)) {
         toast.error(strings.invalidMobile);
         return;
       }
 
-      // Generate ID based on what's provided
-      let newId: string;
-      if (hasName) {
-        const firstName = name.trim().split(' ')[0].toUpperCase();
-        const suffix = hasMobile ? mobile.slice(-4) : Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-        newId = `PAT-${firstName}-${suffix}`;
-      } else {
-        // Mobile only
-        const last4Mobile = mobile.slice(-4);
-        newId = `PAT-USER-${last4Mobile}`;
-      }
+      // Generate ID using a more stable pattern for production
+      const newId = `PAT-${idCardNo.replace(/[-\s]/g, '')}`;
 
-      // Use defaults for optional fields
-      const patientAccount = {
+      const patientAccount: User['account'] = {
         id: newId,
-        fullName: name.trim() || `User-${mobile.slice(-4)}`,
-        dateOfBirth: dob || '2000-01-01', // Default DOB
+        fullName: name.trim(),
+        dateOfBirth: dob,
+        idCardNo: idCardNo.trim(),
         sexAtBirth: sex,
-        country: country.trim() || 'Pakistan', // Default country
+        country: country.trim(),
         language: language,
+        phoneNumber: mobile.trim(),
         createdAt: new Date().toISOString()
       };
 
@@ -103,9 +91,10 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ user, onComplete, o
 
       onComplete({
         ...user,
-        name: name.trim() || `User-${mobile.slice(-4)}`,
+        name: name.trim(),
         id: newId,
-        mobile: mobile || undefined,
+        mobile: mobile.trim(),
+        idCardNo: idCardNo.trim(),
         password,
         language,
         role: user.role!,
@@ -148,34 +137,38 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ user, onComplete, o
 
         {user.role === Role.PATIENT ? (
           <>
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-xs text-blue-800 font-semibold">For testing: Provide either Name OR Phone (4 digits) + Password</p>
-            </div>
             <div className="mb-4">
-              <label htmlFor="name" className="block text-sm font-medium mb-2">{strings.yourName} <span className="text-slate-400 text-xs">(Optional)</span></label>
+              <label htmlFor="name" className="block text-sm font-medium mb-2">{strings.yourName}</label>
               <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)}
                 aria-label={strings.yourName as string}
                 placeholder="e.g. Ali Ahmed"
-                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600" />
+                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600 outline-none focus:ring-2 focus:ring-cyan-500" required />
             </div>
             <div className="mb-4">
-              <label htmlFor="mobile" className="block text-sm font-medium mb-2">{strings.yourMobile} <span className="text-slate-400 text-xs">(Optional - 4 digits OK)</span></label>
+              <label htmlFor="mobile" className="block text-sm font-medium mb-2">{strings.yourMobile}</label>
               <input type="tel" id="mobile" value={mobile} onChange={(e) => setMobile(e.target.value)}
                 aria-label={strings.yourMobile as string}
-                placeholder="1234"
-                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600" />
+                placeholder="+92 XXX XXXXXXX"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600 outline-none focus:ring-2 focus:ring-cyan-500" required />
             </div>
             <div className="mb-4">
-              <label htmlFor="dob" className="block text-sm font-medium mb-2">{strings.dateOfBirth} <span className="text-slate-400 text-xs">(Optional)</span></label>
+              <label htmlFor="idCardNo" className="block text-sm font-medium mb-2">{strings.idCardNo}</label>
+              <input type="text" id="idCardNo" value={idCardNo} onChange={(e) => setIdCardNo(e.target.value)}
+                aria-label={strings.idCardNo as string}
+                placeholder="XXXXX-XXXXXXX-X"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600 outline-none focus:ring-2 focus:ring-cyan-500" required />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="dob" className="block text-sm font-medium mb-2">{strings.dateOfBirth}</label>
               <input type="date" id="dob" value={dob} onChange={(e) => setDob(e.target.value)}
                 aria-label={strings.dateOfBirth as string}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600" />
+                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600 outline-none focus:ring-2 focus:ring-cyan-500" required />
             </div>
             <div className="mb-4">
-              <label htmlFor="sex" className="block text-sm font-medium mb-2">{strings.sexAtBirth} <span className="text-slate-400 text-xs">(Optional)</span></label>
+              <label htmlFor="sex" className="block text-sm font-medium mb-2">{strings.sexAtBirth}</label>
               <select id="sex" value={sex} onChange={(e) => setSex(e.target.value as any)}
                 aria-label={strings.sexAtBirth as string}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600">
+                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600 outline-none focus:ring-2 focus:ring-cyan-500">
                 <option value="male">{strings.male}</option>
                 <option value="female">{strings.female}</option>
                 <option value="intersex">{strings.intersex}</option>
@@ -183,10 +176,10 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ user, onComplete, o
               </select>
             </div>
             <div className="mb-4">
-              <label htmlFor="country" className="block text-sm font-medium mb-2">{strings.country} <span className="text-slate-400 text-xs">(Optional)</span></label>
+              <label htmlFor="country" className="block text-sm font-medium mb-2">{strings.country}</label>
               <input type="text" id="country" value={country} onChange={(e) => setCountry(e.target.value)}
                 aria-label={strings.country as string}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600" />
+                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600 outline-none focus:ring-2 focus:ring-cyan-500" required />
             </div>
           </>
         ) : (

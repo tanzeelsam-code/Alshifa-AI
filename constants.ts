@@ -5,6 +5,8 @@ export const usersData: User[] = [
   {
     id: 'ADM-1',
     name: 'System Admin',
+    mobile: '00000',
+    idCardNo: '00000-0000000-0',
     role: Role.ADMIN,
     language: 'en',
     password: 'admin'
@@ -138,6 +140,7 @@ const enStrings = {
   yourMobile: 'Mobile Number',
   dateOfBirth: 'Date of Birth',
   sexAtBirth: 'Sex at Birth',
+  idCardNo: 'ID Card Number',
   country: 'Country',
   male: 'Male',
   female: 'Female',
@@ -413,6 +416,7 @@ const urStrings = {
   yourMobile: 'موبائل نمبر',
   dateOfBirth: 'تاریخِ پیدائش',
   sexAtBirth: 'جنس',
+  idCardNo: 'شناختی کارڈ نمبر',
   country: 'ملک',
   male: 'مرد',
   female: 'عورت',

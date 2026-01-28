@@ -96,6 +96,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                                 email: profile.email,
                                 role: profile.role,
                                 displayName: profile.display_name,
+                                mobile: profile.mobile,
+                                idCardNo: profile.id_card_no,
+                                dateOfBirth: profile.date_of_birth,
                                 emailVerified: !!sbUser.email_confirmed_at,
                                 createdAt: profile.created_at,
                                 lastLoginAt: sbUser.last_sign_in_at || profile.created_at,
@@ -157,10 +160,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         email: string,
         password: string,
         role: Role,
-        displayName?: string
+        displayName?: string,
+        mobile?: string,
+        idCardNo?: string,
+        dateOfBirth?: string
     ): Promise<void> => {
         try {
-            const profile = await registerUser(email, password, role, displayName);
+            const profile = await registerUser(email, password, role, displayName, mobile, idCardNo, dateOfBirth);
             setUser(profile);
 
             // Also save to localStorage for backwards compatibility
