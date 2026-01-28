@@ -421,8 +421,17 @@ const App: React.FC = () => {
         const loadingToast = toast.loading('Authenticating...');
         try {
           // Normalize email for Supabase
+          // For patients: convert mobile to email format (remove +, spaces, etc.)
           const identifier = creds.identifier;
-          const email = identifier.includes('@') ? identifier : `${identifier.replace(/\s+/g, '').toLowerCase()}@alshifa.ai`;
+          let email: string;
+
+          if (identifier.includes('@')) {
+            email = identifier;
+          } else {
+            // Remove all non-numeric characters from mobile number
+            const cleanedMobile = identifier.replace(/[^\d]/g, '');
+            email = `${cleanedMobile}@alshifa.ai`;
+          }
 
           await sbLogin(email, creds.password!);
           toast.dismiss(loadingToast);
