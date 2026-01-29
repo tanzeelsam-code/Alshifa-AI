@@ -94,10 +94,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                             .single();
 
                         if (profile) {
+                            // Generate authEmail from phone for consistency
+                            const authEmail = profile.mobile
+                                ? `${profile.mobile.replace(/[^\d]/g, '')}@alshifa.ai`
+                                : sbUser.email || '';
+
                             const userProfile: UserProfile = {
                                 uid: profile.id,
                                 phone: profile.mobile || '',
                                 email: profile.email ?? null,
+                                authEmail,
                                 role: profile.role,
                                 displayName: profile.full_name,
                                 idCardNo: profile.id_card_no,

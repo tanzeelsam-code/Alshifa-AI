@@ -2,7 +2,8 @@
  * Supabase Authentication Service
  * Clinical-Grade System Infrastructure
  * 
- * Phone-First Authentication with Required DOB
+ * Phone-First UI with Email-Based Supabase Auth
+ * (Phone is converted to email format: +923001234567 → 923001234567@alshifa.ai)
  */
 
 import { supabase } from '../../lib/supabase';
@@ -13,8 +14,9 @@ export type DbRole = 'patient' | 'doctor' | 'admin';
 
 export interface SupabaseUserProfile {
     uid: string;
-    phone: string;                 // REQUIRED - primary identifier
-    email?: string | null;         // OPTIONAL
+    phone: string;                 // Primary identifier (stored as display)
+    email?: string | null;         // User's real email (optional)
+    authEmail: string;             // Internal auth email (phone@alshifa.ai)
     role: DbRole;                  // DB-consistent lowercase
     displayName?: string;
     idCardNo?: string;
@@ -27,21 +29,26 @@ export interface SupabaseUserProfile {
 
 /**
  * Normalize role to lowercase for Supabase database constraint
- * The database users_role_check constraint requires lowercase: 'patient', 'doctor', 'admin'
  */
 const normalizeRole = (role: Role | string): DbRole => {
     const roleStr = role.toString().toLowerCase();
-
-    // Map enum values to database values
     if (roleStr.includes('patient')) return 'patient';
     if (roleStr.includes('doctor') || roleStr.includes('physician')) return 'doctor';
     if (roleStr.includes('admin')) return 'admin';
-
-    // Fallback to patient for unknown roles
     if (import.meta.env.DEV) {
         console.warn(`⚠️ Unknown role "${role}", defaulting to 'patient'`);
     }
     return 'patient';
+};
+
+/**
+ * Convert phone number to internal auth email format
+ * Example: +92 300 1234567 → 923001234567@alshifa.ai
+ */
+const phoneToAuthEmail = (phone: string): string => {
+    // Remove all non-numeric characters
+    const cleanPhone = phone.replace(/[^\d]/g, '');
+    return `${cleanPhone}@alshifa.ai`;
 };
 
 /**
@@ -53,13 +60,13 @@ export interface RegisterInput {
     role: Role;                 // REQUIRED
     dateOfBirth: string;        // REQUIRED
     displayName?: string;       // Optional
-    email?: string;             // Optional (can be added later)
+    email?: string;             // Optional (user's real email for notifications)
     idCardNo?: string;          // Optional
 }
 
 /**
  * Register new user with phone as primary identifier
- * DOB is required at registration time
+ * Internally uses email-based Supabase auth (phone → email conversion)
  */
 export const registerUser = async (input: RegisterInput): Promise<SupabaseUserProfile> => {
     const { phone, password, role, dateOfBirth, displayName, email, idCardNo } = input;
@@ -76,16 +83,18 @@ export const registerUser = async (input: RegisterInput): Promise<SupabaseUserPr
     }
 
     const dbRole = normalizeRole(role);
+    const authEmail = phoneToAuthEmail(phone);
 
     try {
-        // Phone + password signup (Supabase supports this)
+        // Use EMAIL signup with phone-derived email (no SMS needed)
         const { data: authData, error: authError } = await supabase.auth.signUp({
-            phone,
+            email: authEmail,  // Use phone-derived email for auth
             password,
             options: {
                 data: {
                     displayName,
                     role: dbRole,
+                    phone,  // Store original phone in metadata
                 },
             },
         });
@@ -94,11 +103,10 @@ export const registerUser = async (input: RegisterInput): Promise<SupabaseUserPr
         if (!authData.user) throw new Error('User creation failed');
 
         // Create profile row in users table
-        // CRITICAL: If this fails, we throw - no silent failures
         const { error: profileError } = await supabase.from('users').upsert({
             id: authData.user.id,
-            mobile: phone,
-            email: email ?? null,
+            mobile: phone,           // Store original phone
+            email: email ?? null,    // User's real email (optional)
             role: dbRole,
             full_name: displayName ?? '',
             id_card_no: idCardNo ?? null,
@@ -106,7 +114,6 @@ export const registerUser = async (input: RegisterInput): Promise<SupabaseUserPr
         });
 
         if (profileError) {
-            // In a clinical app, don't silently succeed
             throw new Error(`Profile creation failed: ${profileError.message}`);
         }
 
@@ -117,7 +124,8 @@ export const registerUser = async (input: RegisterInput): Promise<SupabaseUserPr
         return {
             uid: authData.user.id,
             phone,
-            email: email ?? authData.user.email ?? null,
+            email: email ?? null,
+            authEmail,
             role: dbRole,
             displayName: displayName ?? '',
             idCardNo,
@@ -136,21 +144,21 @@ export const registerUser = async (input: RegisterInput): Promise<SupabaseUserPr
 
 /**
  * Sign-in input parameters
- * Supports phone OR email authentication
  */
 export interface SignInInput {
     password: string;           // REQUIRED
     phone?: string;             // Primary - use this for phone login
-    email?: string;             // Secondary - use this for email login
+    email?: string;             // Secondary - use this for email login (real email)
 }
 
 /**
- * Sign in with phone or email and password
+ * Sign in with phone or email
+ * For phone: converts to internal auth email format
+ * For email: checks if it's a real email or internal format
  */
 export const signIn = async (input: SignInInput): Promise<SupabaseUserProfile> => {
     const { phone, email, password } = input;
 
-    // Validate
     if (!password) {
         throw new Error('Password is required');
     }
@@ -158,10 +166,26 @@ export const signIn = async (input: SignInInput): Promise<SupabaseUserProfile> =
         throw new Error('Phone or email is required');
     }
 
+    // Determine the auth email to use
+    let authEmail: string;
+    if (phone) {
+        authEmail = phoneToAuthEmail(phone);
+    } else if (email) {
+        // If user provided an email, check if it's already internal format
+        if (email.endsWith('@alshifa.ai')) {
+            authEmail = email;
+        } else {
+            // Try to find user by their real email first
+            // For now, just try using it directly (won't work unless they registered with this email)
+            authEmail = email;
+        }
+    } else {
+        throw new Error('Phone or email is required');
+    }
+
     try {
-        // Supabase supports both phone+password and email+password
         const { data, error } = await supabase.auth.signInWithPassword({
-            ...(phone ? { phone } : { email: email! }),
+            email: authEmail,
             password,
         });
 
@@ -187,12 +211,13 @@ export const signIn = async (input: SignInInput): Promise<SupabaseUserProfile> =
 
         return {
             uid: profile.id,
-            phone: profile.mobile,
+            phone: profile.mobile || phone || '',
             email: profile.email,
+            authEmail,
             role: normalizeRole(profile.role),
             displayName: profile.full_name,
             idCardNo: profile.id_card_no,
-            dateOfBirth: profile.date_of_birth,
+            dateOfBirth: profile.date_of_birth || '',
             emailVerified: !!data.user.email_confirmed_at,
             createdAt: profile.created_at,
             lastLoginAt: data.user.last_sign_in_at || profile.created_at,
@@ -226,15 +251,20 @@ export const signOut = async (): Promise<void> => {
 
 /**
  * Send password reset email
- * Note: For phone-only users, use OTP flow for recovery
+ * For phone-based users, this sends to their phone-derived email
+ * (They'll need access to check if email confirmation is off, or use a real email)
  */
-export const resetPassword = async (email: string): Promise<void> => {
-    if (!email?.trim()) {
-        throw new Error('Email is required for password reset');
+export const resetPassword = async (emailOrPhone: string): Promise<void> => {
+    if (!emailOrPhone?.trim()) {
+        throw new Error('Email or phone is required for password reset');
     }
 
+    // Determine if it's a phone or email
+    const isPhone = /^[+\d\s-]+$/.test(emailOrPhone) && !emailOrPhone.includes('@');
+    const resetEmail = isPhone ? phoneToAuthEmail(emailOrPhone) : emailOrPhone;
+
     try {
-        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        const { error } = await supabase.auth.resetPasswordForEmail(resetEmail);
         if (error) throw error;
         if (import.meta.env.DEV) {
             console.log('✅ Password reset email sent');
@@ -244,53 +274,6 @@ export const resetPassword = async (email: string): Promise<void> => {
             console.error('❌ Password reset failed:', error);
         }
         throw new Error(error.message || 'Password reset failed');
-    }
-};
-
-/**
- * Send OTP to phone for verification/recovery
- * Use this for phone-only users who need password recovery
- */
-export const sendPhoneOTP = async (phone: string): Promise<void> => {
-    if (!phone?.trim()) {
-        throw new Error('Phone number is required');
-    }
-
-    try {
-        const { error } = await supabase.auth.signInWithOtp({
-            phone,
-        });
-        if (error) throw error;
-        if (import.meta.env.DEV) {
-            console.log('✅ OTP sent to phone');
-        }
-    } catch (error: any) {
-        if (import.meta.env.DEV) {
-            console.error('❌ OTP send failed:', error);
-        }
-        throw new Error(error.message || 'Failed to send OTP');
-    }
-};
-
-/**
- * Verify phone OTP
- */
-export const verifyPhoneOTP = async (phone: string, token: string): Promise<void> => {
-    try {
-        const { error } = await supabase.auth.verifyOtp({
-            phone,
-            token,
-            type: 'sms',
-        });
-        if (error) throw error;
-        if (import.meta.env.DEV) {
-            console.log('✅ Phone OTP verified');
-        }
-    } catch (error: any) {
-        if (import.meta.env.DEV) {
-            console.error('❌ OTP verification failed:', error);
-        }
-        throw new Error(error.message || 'OTP verification failed');
     }
 };
 
@@ -307,67 +290,4 @@ export const onAuthStateChange = (
     return () => {
         subscription.unsubscribe();
     };
-};
-
-// ============================================
-// LEGACY COMPATIBILITY WRAPPER
-// These functions provide backwards compatibility
-// with the old email-first API while using phone internally
-// ============================================
-
-/**
- * Legacy registration function for backwards compatibility
- * @deprecated Use registerUser(input: RegisterInput) instead
- */
-export const registerUserLegacy = async (
-    email: string,
-    password: string,
-    role: Role,
-    displayName?: string,
-    mobile?: string,
-    idCardNo?: string,
-    dateOfBirth?: string
-): Promise<SupabaseUserProfile> => {
-    // If mobile is provided, use it as primary; otherwise fall back to email-based flow
-    if (mobile?.trim()) {
-        return registerUser({
-            phone: mobile,
-            password,
-            role,
-            dateOfBirth: dateOfBirth || '',
-            displayName,
-            email,
-            idCardNo,
-        });
-    }
-
-    // Fallback for email-only registration (legacy support)
-    // This creates a pseudo-phone from timestamp for compatibility
-    const pseudoPhone = `+0${Date.now()}`;
-    return registerUser({
-        phone: pseudoPhone,
-        password,
-        role,
-        dateOfBirth: dateOfBirth || new Date().toISOString().split('T')[0],
-        displayName,
-        email,
-        idCardNo,
-    });
-};
-
-/**
- * Legacy sign-in function for backwards compatibility
- * @deprecated Use signIn(input: SignInInput) instead
- */
-export const signInLegacy = async (
-    identifier: string,
-    password: string
-): Promise<SupabaseUserProfile> => {
-    // Detect if identifier is email or phone
-    const isEmail = identifier.includes('@');
-
-    return signIn({
-        password,
-        ...(isEmail ? { email: identifier } : { phone: identifier }),
-    });
 };
