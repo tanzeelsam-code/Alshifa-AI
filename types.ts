@@ -176,6 +176,8 @@ export enum AppState {
   VISIT_TYPE_SELECTION,
   RECOMMENDATIONS,
   PROFILE,
+  POST_INTAKE_BOOKING,    // Appointment booking after intake with urgency context
+  BOOKING_CONFIRMATION,   // Final confirmation screen with intake + appointment summary
 }
 
 export interface AppNotification {

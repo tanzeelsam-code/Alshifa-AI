@@ -46,6 +46,10 @@ import { RecommendationScreen } from './components/RecommendationScreen';
 import { mapEncounterToIntakeResult } from './utils/recommendationMapper';
 import { IntakeResult } from './types/recommendation';
 import { AuditService, AuditAction } from './services/AuditService';
+import { EncounterIntake } from './src/intake/models/EncounterIntake';
+import { AppointmentBooking } from './src/intake/components/AppointmentBooking';
+import { BookingConfirmation } from './components/BookingConfirmation';
+import { mapTriageToUrgency, mapUrgencyToRisk, AppointmentUrgencyContext } from './utils/triageMapper';
 
 const initializeData = <T,>(key: string, initialData: T[], secure = false): T[] => {
   try {
@@ -126,6 +130,11 @@ const App: React.FC = () => {
   const [selectedVisitType, setSelectedVisitType] = useState<VisitType | null>(null);
   const [showAISettings, setShowAISettings] = useState(false);
   const [currentIntakeResult, setCurrentIntakeResult] = useState<IntakeResult | null>(null);
+
+  // New states for post-intake appointment booking flow
+  const [pendingEncounter, setPendingEncounter] = useState<EncounterIntake | null>(null);
+  const [pendingAppointment, setPendingAppointment] = useState<any | null>(null);
+  const [urgencyContext, setUrgencyContext] = useState<AppointmentUrgencyContext | null>(null);
 
   // ============================================================================
   // AUTHENTICATION CHECK ON MOUNT (SIMPLIFIED - NO DEADLOCK)
@@ -541,7 +550,8 @@ const App: React.FC = () => {
         );
       case AppState.SESSION_TYPE_SELECTION:
         if (!isPatientRole(loggedInUser?.role)) return <div className="text-center p-8"><p>{uiStrings[language].accessDeniedPatient}</p><button onClick={handleStartOver} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">{uiStrings[language].backToLogin}</button></div>;
-        return <SessionTypeSelection onNewSession={() => setAppState(AppState.DOCTOR_SELECTION)} onHistory={() => setAppState(AppState.HISTORY_VIEW)} onDashboard={() => setAppState(AppState.PATIENT_DASHBOARD)} onMedication={() => setAppState(AppState.MEDICATION_DASHBOARD)} onBack={handleStartOver} />;
+        // NEW FLOW: Go directly to intake, appointment booking happens after
+        return <SessionTypeSelection onNewSession={() => setAppState(AppState.CHAT)} onHistory={() => setAppState(AppState.HISTORY_VIEW)} onDashboard={() => setAppState(AppState.PATIENT_DASHBOARD)} onMedication={() => setAppState(AppState.MEDICATION_DASHBOARD)} onBack={handleStartOver} />;
       case AppState.MEDICATION_DASHBOARD:
         if (!isPatientRole(loggedInUser?.role)) return <div className="text-center p-8"><p>{uiStrings[language].accessDeniedPatient}</p><button onClick={handleStartOver} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">{uiStrings[language].backToLogin}</button></div>;
         return (
@@ -653,43 +663,17 @@ const App: React.FC = () => {
           <IntakeScreen
             patientAccount={patientAccount}
             currentLanguage={language}
-            onExit={() => setAppState(AppState.PATIENT_DASHBOARD)}
+            onExit={() => setAppState(AppState.SESSION_TYPE_SELECTION)}
             onComplete={(encounter) => {
-              // 1. Map encounter results to a PatientSummary
-              const newSummary: PatientSummary = {
-                patientId: encounter.patientId,
-                patientName: loggedInUser?.name || 'Patient',
-                appointmentDate: new Date().toISOString().split('T')[0],
-                appointmentTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                summary: encounter.hpi || encounter.complaintText || 'Medical Intake completed.',
-                doctorId: appointment?.doctor.id || SEED_DOCTOR_ID,
-                consultationType: appointment?.doctor.id ? 'online' : 'in-house',
-                riskClassification: encounter.redFlagsDetected?.length > 0 ? 'Urgent' : 'Routine',
-                status: 'Pending',
-                intakeMode: selectedVisitType === 'FOLLOW_UP' ? 'follow_up' : 'first_time',
-                intakeAnswers: {
-                  ...encounter.responses,
-                  initialComplaint: (encounter as any).initialComplaint, // Bridge from our orchestrator
-                  timeline: (encounter as any).timeline
-                },
-                soap: {
-                  subjective: encounter.hpi || '',
-                  objective: 'Vitals stable. See intake details.',
-                  assessment: encounter.assessment || '',
-                  plan: encounter.plan || ''
-                },
-                painPoints: encounter.painPoints?.map(p => ({ zoneId: p.zoneId, intensity: p.intensity })),
-                risks: encounter.redFlags,
-                conditionFocus: encounter.chiefComplaint || encounter.complaintText
-              };
+              // NEW FLOW: Store encounter and calculate urgency, then go to appointment booking
+              setPendingEncounter(encounter);
 
-              // 2. Save to global state
-              const updatedSummaries = [...allPatientSummaries, newSummary];
-              setAllPatientSummaries(updatedSummaries);
-              localStorage.setItem('alshifa_summaries', encryptData(JSON.stringify(updatedSummaries)));
+              // Calculate urgency context from triage data
+              const urgency = mapTriageToUrgency(encounter);
+              setUrgencyContext(urgency);
 
-              toast.success('Intake Completed & Saved!');
-              setAppState(AppState.PATIENT_DASHBOARD);
+              // Navigate to appointment booking with urgency context
+              setAppState(AppState.POST_INTAKE_BOOKING);
             }}
           />
         );
@@ -708,6 +692,105 @@ const App: React.FC = () => {
             }}
           />
         );
+      case AppState.POST_INTAKE_BOOKING:
+        if (!pendingEncounter || !urgencyContext) {
+          // No intake data, redirect back
+          return (
+            <div className="text-center p-8">
+              <p>No intake data found. Please complete the medical intake first.</p>
+              <button
+                onClick={() => setAppState(AppState.CHAT)}
+                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg font-bold"
+              >
+                Start Intake
+              </button>
+            </div>
+          );
+        }
+
+        return (
+          <AppointmentBooking
+            language={language}
+            urgencyLevel={urgencyContext.urgencyLevel}
+            recommendedSpecialty={urgencyContext.recommendedSpecialty}
+            waitTimeRecommendation={urgencyContext.waitTimeRecommendation}
+            allDoctors={allDoctors}
+            onComplete={(appointmentData) => {
+              setPendingAppointment(appointmentData);
+              setAppState(AppState.BOOKING_CONFIRMATION);
+            }}
+            onBack={() => setAppState(AppState.CHAT)}
+          />
+        );
+
+      case AppState.BOOKING_CONFIRMATION:
+        if (!pendingEncounter || !pendingAppointment || !urgencyContext) {
+          return (
+            <div className="text-center p-8">
+              <p>Missing booking information. Please try again.</p>
+              <button
+                onClick={() => setAppState(AppState.SESSION_TYPE_SELECTION)}
+                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg font-bold"
+              >
+                Start Over
+              </button>
+            </div>
+          );
+        }
+
+        return (
+          <BookingConfirmation
+            language={language}
+            encounter={pendingEncounter}
+            appointment={pendingAppointment}
+            urgencyContext={urgencyContext}
+            onConfirm={() => {
+              // Save encounter as PatientSummary with appointment details
+              const newSummary: PatientSummary = {
+                patientId: pendingEncounter.patientId,
+                patientName: loggedInUser?.name || 'Patient',
+                appointmentDate: pendingAppointment.slot.start.toISOString().split('T')[0],
+                appointmentTime: pendingAppointment.slot.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                summary: pendingEncounter.hpi || pendingEncounter.complaintText || 'Medical Intake completed.',
+                doctorId: pendingAppointment.doctorId,
+                consultationType: pendingAppointment.type === 'in-person' ? 'in-house' : 'online',
+                riskClassification: mapUrgencyToRisk(urgencyContext.urgencyLevel),
+                status: 'Pending',
+                intakeMode: 'first_time',
+                intakeAnswers: {
+                  ...pendingEncounter.responses,
+                  initialComplaint: (pendingEncounter as any).initialComplaint,
+                  timeline: (pendingEncounter as any).timeline
+                },
+                soap: {
+                  subjective: pendingEncounter.hpi || '',
+                  objective: 'Vitals pending. See intake details.',
+                  assessment: pendingEncounter.assessment || '',
+                  plan: pendingEncounter.plan || ''
+                },
+                painPoints: pendingEncounter.painPoints?.map(p => ({ zoneId: p.zoneId, intensity: p.intensity })),
+                risks: pendingEncounter.redFlagsDetected?.map(f => f.description),
+                conditionFocus: pendingEncounter.chiefComplaint || pendingEncounter.complaintText
+              };
+
+              // Save to state and storage
+              const updatedSummaries = [...allPatientSummaries, newSummary];
+              setAllPatientSummaries(updatedSummaries);
+              localStorage.setItem('alshifa_summaries', encryptData(JSON.stringify(updatedSummaries)));
+
+              // Clear pending state
+              setPendingEncounter(null);
+              setPendingAppointment(null);
+              setUrgencyContext(null);
+
+              toast.success('Appointment Booked Successfully!');
+              setAppState(AppState.PATIENT_DASHBOARD);
+            }}
+            onEditAppointment={() => setAppState(AppState.POST_INTAKE_BOOKING)}
+            onEditIntake={() => setAppState(AppState.CHAT)}
+          />
+        );
+
       case AppState.ADMIN_DASHBOARD:
         return <CostDashboard onBack={handleStartOver} />;
       default:
@@ -736,7 +819,9 @@ const App: React.FC = () => {
       [AppState.APPOINTMENT_SCHEDULING]: AppState.CONSULTATION_MODE_SELECTION,
       [AppState.VISIT_TYPE_SELECTION]: AppState.APPOINTMENT_SCHEDULING,
       [AppState.BASELINE_RECONFIRMATION]: AppState.VISIT_TYPE_SELECTION,
-      [AppState.CHAT]: AppState.VISIT_TYPE_SELECTION,
+      [AppState.CHAT]: AppState.SESSION_TYPE_SELECTION, // Updated: intake goes back to session selection
+      [AppState.POST_INTAKE_BOOKING]: AppState.CHAT, // New: booking goes back to intake
+      [AppState.BOOKING_CONFIRMATION]: AppState.POST_INTAKE_BOOKING, // New: confirmation goes back to booking
       [AppState.HISTORY_VIEW]: AppState.SESSION_TYPE_SELECTION,
       [AppState.RECOMMENDATIONS]: AppState.CHAT,
       [AppState.MEDICATION_DASHBOARD]: AppState.SESSION_TYPE_SELECTION,
