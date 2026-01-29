@@ -41,5 +41,6 @@ export interface IntakeData {
     };
     emergencyResponses?: Record<string, boolean>;
     symptomResponses?: Record<string, any>;
+    aiClinicalDetails?: any;
 }
 

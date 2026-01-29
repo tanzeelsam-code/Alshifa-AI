@@ -9,8 +9,9 @@ import { INITIAL_INTAKE_STATE, getNextQuestion, processUserResponse } from '../s
 import { CONFIDENCE_LEVELS } from '../constants';
 import { sanitizeText } from '../utils/sanitize';
 import toast from 'react-hot-toast';
-import { Mic, MicOff, Volume2, VolumeX, Bot } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, Bot, Brain } from 'lucide-react';
 import AIProviderSelector from './AIProviderSelector';
+import { realTimeAIIntakeService } from '../src/intake/services/RealTimeAIIntake.service';
 
 interface ChatInterfaceProps {
   user: User;
@@ -58,15 +59,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
+  const [useAIIntake, setUseAIIntake] = useState(true);
+  const intakeMode = medicalHistory && medicalHistory.completed ? 'follow_up' : 'first_time';
+  const intakeContext = {
+    patientAccount: appointment.patientAccount || {},
+    isNewPatient: intakeMode === 'first_time'
+  };
+
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { doctor } = appointment;
-
-  const intakeMode = medicalHistory && medicalHistory.completed ? 'follow_up' : 'first_time';
 
   useEffect(() => {
     if (initialMessages.length === 0) {
       const welcomeText = intakeMode === 'follow_up' ? strings.followUpWelcome : strings.intake.intro;
-      const firstProtocolQuestion = getNextQuestion(INITIAL_INTAKE_STATE, language);
+      const firstProtocolQuestion = getNextQuestion(INITIAL_INTAKE_STATE, intakeContext as any, language);
       setMessages([
         { sender: 'bot', text: welcomeText as string },
         { sender: 'bot', text: firstProtocolQuestion }
@@ -193,18 +199,48 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setIsLoading(true);
 
     try {
-      const updatedState = await processUserResponse(intakeState, sanitized, language);
-      setIntakeState(updatedState);
+      if (useAIIntake) {
+        // AI-Driven Flow
+        const chatHistory = messages.map(m => ({ sender: m.sender, text: m.text }));
+        const aiResponse = await realTimeAIIntakeService.processResponse(sanitized, chatHistory, language);
 
-      const nextQuestion = getNextQuestion(updatedState, language);
-      if (nextQuestion) {
-        setMessages([...newMessages, { sender: 'bot', text: nextQuestion }]);
-      }
+        // Update state with AI JSON content
+        const nextIntakeState = { ...intakeState };
+        nextIntakeState.chiefComplaint = aiResponse.intake_state.chief_complaint;
+        nextIntakeState.answers['ai_location'] = JSON.stringify(aiResponse.intake_state.location);
 
-      if (updatedState.step === 'SUMMARY' && !structuredData && !isGeneratingSummary) {
-        setIsGeneratingSummary(true);
-        await handleGenerateSummary();
-        setIsGeneratingSummary(false);
+        // Try mapping AI location to our BodyZoneHierarchy
+        const mappedZoneId = realTimeAIIntakeService.mapToInternalZone(aiResponse);
+        if (mappedZoneId) {
+          nextIntakeState.zone = mappedZoneId;
+        }
+
+        setIntakeState(nextIntakeState);
+
+        if (aiResponse.next_question) {
+          setMessages([...newMessages, { sender: 'bot', text: aiResponse.next_question }]);
+        }
+
+        // Logic to determine if intake is complete based on AI confidence or specific signal
+        if (aiResponse.intake_state.confidence.location_confidence_0_to_1 > 0.9 && aiResponse.intake_state.chief_complaint) {
+          // We could trigger a transition to SUMMARY here if we want to auto-complete
+        }
+
+      } else {
+        // Legacy Deterministic Flow
+        const updatedState = await processUserResponse(intakeState, sanitized, intakeContext as any, language);
+        setIntakeState(updatedState);
+
+        const nextQuestion = getNextQuestion(updatedState, intakeContext as any, language);
+        if (nextQuestion) {
+          setMessages([...newMessages, { sender: 'bot', text: nextQuestion }]);
+        }
+
+        if (updatedState.step === 'SUMMARY' && !structuredData && !isGeneratingSummary) {
+          setIsGeneratingSummary(true);
+          await handleGenerateSummary();
+          setIsGeneratingSummary(false);
+        }
       }
     } catch (err: any) {
       console.error("Intake Flow Error:", err);
@@ -385,8 +421,8 @@ Important:
                 <div
                   key={i}
                   className={`h-1 flex-1 rounded-full min-w-[8px] ${['EMERGENCY_CHECK', 'CHIEF_COMPLAINT', 'DURATION', 'SEVERITY', 'ASSOCIATED', 'RED_FLAGS', 'HISTORY', 'MEDICATIONS', 'ALLERGIES', 'SUMMARY'].indexOf(intakeState.step) >= i
-                      ? 'bg-cyan-500'
-                      : 'bg-slate-300 dark:bg-slate-600'
+                    ? 'bg-cyan-500'
+                    : 'bg-slate-300 dark:bg-slate-600'
                     }`}
                 />
               ))}
@@ -409,8 +445,8 @@ Important:
           {messages.map((msg, index) => (
             <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] px-4 py-2 rounded-2xl shadow-sm ${msg.sender === 'user'
-                  ? 'bg-cyan-600 text-white rounded-br-none'
-                  : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-none border border-slate-100 dark:border-slate-700'
+                ? 'bg-cyan-600 text-white rounded-br-none'
+                : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-none border border-slate-100 dark:border-slate-700'
                 }`}>
                 <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
 
@@ -479,8 +515,8 @@ Important:
               <button
                 onClick={isRecording ? stopRecording : startRecording}
                 className={`p-2 rounded-xl transition-colors ${isRecording
-                    ? 'bg-red-600 text-white animate-pulse'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-600'
+                  ? 'bg-red-600 text-white animate-pulse'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-600'
                   }`}
                 disabled={isLoading}
               >

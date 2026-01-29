@@ -213,7 +213,7 @@ export const BODY_ZONE_TREE: Record<string, any> = {
                                 terminal: true,
                                 clinical: {
                                     common_diagnoses: ['Conjunctivitis', 'Acute angle-closure glaucoma', 'Iritis'],
-                                    common_diagnoses_ur: ['آنکھ کا آنا', 'کالا موتیا', 'آنکھ کی سوزش'],
+                                    common_diagnoses_ur: ['آنکھ کا آنا (آشوبِ چشم)', 'کالا موتیا', 'آنکھ کی سوزش'],
                                     red_flags: [],
                                     icd10_codes: ['H10.9', 'H40.2']
                                 }
@@ -806,6 +806,64 @@ export const BODY_ZONE_TREE: Record<string, any> = {
         }
     },
 
+    PELVIS: {
+        id: 'PELVIS',
+        label_en: 'Pelvis & Groin',
+        label_ur: 'پیلویس اور پیٹ کا نچلا حصہ',
+        clinical_term: 'Pelvic Region',
+        category: 'pelvis' as ZoneCategory,
+        systems: ['genitourinary', 'reproductive', 'musculoskeletal'] as BodySystem[],
+        terminal: false,
+
+        children: {
+            LEFT_INGUINAL: {
+                id: 'LEFT_INGUINAL',
+                label_en: 'Left Groin',
+                label_ur: 'بایاں پیٹ کا نچلا حصہ',
+                clinical_term: 'Left Inguinal Region',
+                category: 'pelvis' as ZoneCategory,
+                systems: ['musculoskeletal'] as BodySystem[],
+                terminal: true,
+                clinical: {
+                    common_diagnoses: ['Inguinal hernia', 'Lymphadenopathy', 'Muscle strain'],
+                    common_diagnoses_ur: ['انگوئنیل ہرنیا', 'لمف نوڈس کی سوزش', 'پٹھوں کا کھچاؤ'],
+                    red_flags: [],
+                    icd10_codes: ['K40.9']
+                }
+            },
+            RIGHT_INGUINAL: {
+                id: 'RIGHT_INGUINAL',
+                label_en: 'Right Groin',
+                label_ur: 'دایاں پیٹ کا نچلا حصہ',
+                clinical_term: 'Right Inguinal Region',
+                category: 'pelvis' as ZoneCategory,
+                systems: ['musculoskeletal'] as BodySystem[],
+                terminal: true,
+                clinical: {
+                    common_diagnoses: ['Inguinal hernia', 'Lymphadenopathy', 'Muscle strain'],
+                    common_diagnoses_ur: ['انگوئنیل ہرنیا', 'لمف نوڈس کی سوزش', 'پٹھوں کا کھچاؤ'],
+                    red_flags: [],
+                    icd10_codes: ['K40.9']
+                }
+            },
+            PUBIC_SYMPHYSIS: {
+                id: 'PUBIC_SYMPHYSIS',
+                label_en: 'Pubic Area',
+                label_ur: 'شرمگاہ کا اوپری حصہ',
+                clinical_term: 'Pubic Region',
+                category: 'pelvis' as ZoneCategory,
+                systems: ['musculoskeletal'] as BodySystem[],
+                terminal: true,
+                clinical: {
+                    common_diagnoses: ['Osteitis pubis', 'Symphysis dysfunction'],
+                    common_diagnoses_ur: ['ہڈی کی سوزش', 'جوڑ کا مسئلہ'],
+                    red_flags: [],
+                    icd10_codes: ['M84.88']
+                }
+            }
+        }
+    },
+
     // ==========================================================================
     // BACK (POSTERIOR)
     // ==========================================================================
@@ -819,131 +877,173 @@ export const BODY_ZONE_TREE: Record<string, any> = {
         terminal: false,
 
         children: {
-            CERVICAL_SPINE: {
-                id: 'CERVICAL_SPINE',
-                label_en: 'Neck/Upper Back',
-                label_ur: 'گردن / اوپری کمر',
-                clinical_term: 'Cervical Spine',
+            BACK_UPPER: {
+                id: 'BACK_UPPER',
+                label_en: 'Upper Back',
+                label_ur: 'اوپری کمر',
                 category: 'back' as ZoneCategory,
-                systems: ['musculoskeletal', 'neurological'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Cervical spondylosis', 'Muscle strain', 'Disc herniation'],
-                    common_diagnoses_ur: ['گردن کے مہروں کی سوزش', 'پٹھوں کا کھچاؤ', 'ڈسک کا سرکنا'],
-                    red_flags: [],
-                    icd10_codes: ['M54.2', 'M50.9']
+                terminal: false,
+                children: {
+                    CERVICAL_SPINE: {
+                        id: 'CERVICAL_SPINE',
+                        label_en: 'Neck/Upper Back',
+                        label_ur: 'گردن / اوپری کمر',
+                        clinical_term: 'Cervical Spine',
+                        category: 'back' as ZoneCategory,
+                        systems: ['musculoskeletal', 'neurological'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Cervical spondylosis', 'Muscle strain', 'Disc herniation'],
+                            common_diagnoses_ur: ['گردن کے مہروں کی سوزش', 'پٹھوں کا کھچاؤ', 'ڈسک کا سرکنا'],
+                            red_flags: [],
+                            icd10_codes: ['M54.2', 'M50.9']
+                        }
+                    },
+                    UPPER_THORACIC: {
+                        id: 'UPPER_THORACIC',
+                        label_en: 'Upper Back (Between Shoulder Blades)',
+                        label_ur: 'اوپری کمر (کندھوں کے بیچ)',
+                        clinical_term: 'Upper Thoracic',
+                        category: 'back' as ZoneCategory,
+                        systems: ['musculoskeletal', 'respiratory'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Muscle strain', 'Thoracic disc disease', 'Rib dysfunction'],
+                            common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'کمر کے مهروں کا مسئلہ', 'پسلیوں کا مسئلہ'],
+                            red_flags: [],
+                            icd10_codes: ['M54.6']
+                        }
+                    },
+                    LEFT_SCAPULA: {
+                        id: 'LEFT_SCAPULA',
+                        label_en: 'Left Shoulder Blade',
+                        label_ur: 'بایاں شانہ (کندھے کی ہڈی)',
+                        clinical_term: 'Left Scapula',
+                        category: 'back' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Scapular dyskinesis', 'Muscle strain', 'Bursitis'],
+                            common_diagnoses_ur: ['شانے کی حرکت میں دشواری', 'پٹھوں کا کھچاؤ', 'جوڑ کی سوزش'],
+                            red_flags: [],
+                            icd10_codes: ['M75.8']
+                        }
+                    },
+                    RIGHT_SCAPULA: {
+                        id: 'RIGHT_SCAPULA',
+                        label_en: 'Right Shoulder Blade',
+                        label_ur: 'دایاں شانہ (کندھے کی ہڈی)',
+                        clinical_term: 'Right Scapula',
+                        category: 'back' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Scapular dyskinesis', 'Muscle strain', 'Bursitis'],
+                            common_diagnoses_ur: ['شانے کی حرکت میں دشواری', 'پٹھوں کا کھچاؤ', 'جوڑ کی سوزش'],
+                            red_flags: [],
+                            icd10_codes: ['M75.8']
+                        }
+                    }
                 }
             },
-
-            UPPER_THORACIC: {
-                id: 'UPPER_THORACIC',
-                label_en: 'Upper Back (Between Shoulder Blades)',
-                label_ur: 'اوپری کمر (کندھوں کے بیچ)',
-                clinical_term: 'Upper Thoracic',
-                category: 'back' as ZoneCategory,
-                systems: ['musculoskeletal', 'respiratory'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Muscle strain', 'Thoracic disc disease', 'Rib dysfunction'],
-                    common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'کمر کے مہروں کا مسئلہ', 'پسلیوں کا مسئلہ'],
-                    red_flags: [],
-                    icd10_codes: ['M54.6']
-                }
-            },
-
-            LOWER_THORACIC: {
-                id: 'LOWER_THORACIC',
-                label_en: 'Mid Back',
-                label_ur: 'درمیانی کمر',
-                clinical_term: 'Lower Thoracic',
-                category: 'back' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Muscle strain', 'Thoracic disc disease'],
-                    common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'کمر کے مہروں کا مسئلہ'],
-                    red_flags: [],
-                    icd10_codes: ['M54.6']
-                }
-            },
-
-            LUMBAR_SPINE: {
-                id: 'LUMBAR_SPINE',
+            BACK_LOWER: {
+                id: 'BACK_LOWER',
                 label_en: 'Lower Back',
                 label_ur: 'نچلی کمر',
-                clinical_term: 'Lumbar Region',
                 category: 'back' as ZoneCategory,
-                systems: ['musculoskeletal', 'neurological'] as BodySystem[],
-                terminal: true,
-                priority: 9,
-                is_common: true,
-                clinical: {
-                    common_diagnoses: ['Lumbar strain', 'Disc herniation', 'Sciatica', 'Spinal stenosis'],
-                    common_diagnoses_ur: ['کمر کا کھچاؤ', 'ڈسک کا مسئلہ', 'عرق النساء (سیاٹیکا)', 'ریڑھ کی ہڈی کی تنگی'],
-                    red_flags: [
-                        {
-                            symptom: 'Lower back pain with loss of bowel/bladder control',
-                            symptom_ur: 'پیشاب یا پاخانے کے کنٹرول ختم ہونے کے ساتھ کمر کا نچلا درد',
-                            severity: 'immediate' as const,
-                            action: 'Emergency neurosurgical evaluation',
-                            action_ur: 'فوری طور پر نیورو سرجن سے رجوع کریں',
-                            condition: 'Cauda equina syndrome',
-                            condition_ur: 'کاڈا ایکوائنا سنڈروم (اعصابی ہنگامی حالت)'
+                terminal: false,
+                children: {
+                    LOWER_THORACIC: {
+                        id: 'LOWER_THORACIC',
+                        label_en: 'Mid Back',
+                        label_ur: 'درمیانی کمر',
+                        clinical_term: 'Lower Thoracic',
+                        category: 'back' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Muscle strain', 'Thoracic disc disease'],
+                            common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'کمر کے مہروں کا مسئلہ'],
+                            red_flags: [],
+                            icd10_codes: ['M54.6']
                         }
-                    ],
-                    icd10_codes: ['M54.5', 'M51.2', 'M54.4'],
-                    typical_presentation: 'Pain that may radiate to legs',
-                    typical_presentation_ur: 'درد جو ٹانگوں تک جا سکتا ہے'
-                }
-            },
-
-            LEFT_FLANK: {
-                id: 'LEFT_FLANK',
-                label_en: 'Left Side (Kidney Area)',
-                label_ur: 'بایاں پہلو (گردے کا علاقہ)',
-                clinical_term: 'Left Flank',
-                category: 'back' as ZoneCategory,
-                systems: ['genitourinary'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Kidney stones', 'Pyelonephritis', 'Muscular pain'],
-                    common_diagnoses_ur: ['گردے کی پتھری', 'گردے کی سوزش', 'پٹھوں کا درد'],
-                    red_flags: [],
-                    icd10_codes: ['N20.0', 'N10'],
-                    contains: ['Left kidney']
-                }
-            },
-
-            RIGHT_FLANK: {
-                id: 'RIGHT_FLANK',
-                label_en: 'Right Side (Kidney Area)',
-                label_ur: 'دایاں پہلو (گردے کا علاقہ)',
-                clinical_term: 'Right Flank',
-                category: 'back' as ZoneCategory,
-                systems: ['genitourinary'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Kidney stones', 'Pyelonephritis', 'Muscular pain'],
-                    common_diagnoses_ur: ['گردے کی پتھری', 'گردے کی سوزش', 'پٹھوں کا درد'],
-                    red_flags: [],
-                    icd10_codes: ['N20.0', 'N10'],
-                    contains: ['Right kidney']
-                }
-            },
-
-            SACRAL: {
-                id: 'SACRAL',
-                label_en: 'Sacrum (Very Low Back)',
-                label_ur: 'سیکرم (بہت نچلی کمر)',
-                clinical_term: 'Sacral Region',
-                category: 'back' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Sacroiliitis', 'Coccydynia', 'Referred pain'],
-                    common_diagnoses_ur: ['سیکرم جوڑ کی سوزش', 'دمچی کی ہڈی کا درد', 'دیگر جگہ سے آنے والا درد'],
-                    red_flags: [],
-                    icd10_codes: ['M53.3']
+                    },
+                    LUMBAR_SPINE: {
+                        id: 'LUMBAR_SPINE',
+                        label_en: 'Lower Back',
+                        label_ur: 'نچلی کمر',
+                        clinical_term: 'Lumbar Region',
+                        category: 'back' as ZoneCategory,
+                        systems: ['musculoskeletal', 'neurological'] as BodySystem[],
+                        terminal: true,
+                        priority: 9,
+                        is_common: true,
+                        clinical: {
+                            common_diagnoses: ['Lumbar strain', 'Disc herniation', 'Sciatica', 'Spinal stenosis'],
+                            common_diagnoses_ur: ['کمر کا کھچاؤ', 'ڈسک کا مسئلہ', 'عرق النساء (سیاٹیکا)', 'ریڑھ کی ہڈی کی تنگی'],
+                            red_flags: [
+                                {
+                                    symptom: 'Lower back pain with loss of bowel/bladder control',
+                                    symptom_ur: 'پیشاب یا پاخانے کے کنٹرول ختم ہونے کے ساتھ کمر کا نچلا درد',
+                                    severity: 'immediate' as const,
+                                    action: 'Emergency neurosurgical evaluation',
+                                    action_ur: 'فوری طور پر نیورو سرجن سے رجوع کریں',
+                                    condition: 'Cauda equina syndrome',
+                                    condition_ur: 'کاڈا ایکوائنا سنڈروم (اعصابی ہنگامی حالت)'
+                                }
+                            ],
+                            icd10_codes: ['M54.5', 'M51.2', 'M54.4'],
+                            typical_presentation: 'Pain that may radiate to legs',
+                            typical_presentation_ur: 'درد جو ٹانگوں تک جا سکتا ہے'
+                        }
+                    },
+                    SACRAL: {
+                        id: 'SACRAL',
+                        label_en: 'Sacrum (Very Low Back)',
+                        label_ur: 'سیکرم (بہت نچلی کمر)',
+                        clinical_term: 'Sacral Region',
+                        category: 'back' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Sacroiliitis', 'Coccydynia', 'Referred pain'],
+                            common_diagnoses_ur: ['سیکرم جوڑ کی سوزش', 'دمچی کی ہڈی کا درد', 'دیگر جگہ سے آنے والا درد'],
+                            red_flags: [],
+                            icd10_codes: ['M53.3']
+                        }
+                    },
+                    LEFT_FLANK: {
+                        id: 'LEFT_FLANK',
+                        label_en: 'Left Side (Kidney Area)',
+                        label_ur: 'بایاں پہلو (گردے کا علاقہ)',
+                        clinical_term: 'Left Flank',
+                        category: 'back' as ZoneCategory,
+                        systems: ['genitourinary'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Kidney stones', 'Pyelonephritis', 'Muscular pain'],
+                            common_diagnoses_ur: ['گردے کی پتھری', 'گردے کی سوزش', 'پٹھوں کا درد'],
+                            red_flags: [],
+                            icd10_codes: ['N20.0', 'N10'],
+                            contains: ['Left kidney']
+                        }
+                    },
+                    RIGHT_FLANK: {
+                        id: 'RIGHT_FLANK',
+                        label_en: 'Right Side (Kidney Area)',
+                        label_ur: 'دایاں پہلو (گردے کا علاقہ)',
+                        clinical_term: 'Right Flank',
+                        category: 'back' as ZoneCategory,
+                        systems: ['genitourinary'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Kidney stones', 'Pyelonephritis', 'Muscular pain'],
+                            common_diagnoses_ur: ['گردے کی پتھری', 'گردے کی سوزش', 'پٹھوں کا درد'],
+                            red_flags: [],
+                            icd10_codes: ['N20.0', 'N10'],
+                            contains: ['Right kidney']
+                        }
+                    }
                 }
             }
         }
@@ -962,174 +1062,185 @@ export const BODY_ZONE_TREE: Record<string, any> = {
         terminal: false,
 
         children: {
-            LEFT_SHOULDER: {
-                id: 'LEFT_SHOULDER',
-                label_en: 'Left Shoulder',
-                label_ur: 'بایاں کندھا',
-                clinical_term: 'Left Shoulder',
-                category: 'upper_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Rotator cuff tear', 'Frozen shoulder', 'Bursitis', 'Arthritis'],
-                    common_diagnoses_ur: ['کندھے کے پٹھوں کا پھٹنا', 'کندھے کا جام ہونا', 'جوڑ کی سوزش', 'گٹھیا'],
-                    red_flags: [],
-                    icd10_codes: ['M75.1', 'M75.0']
-                }
-            },
-
-            RIGHT_SHOULDER: {
-                id: 'RIGHT_SHOULDER',
-                label_en: 'Right Shoulder',
-                label_ur: 'دایاں کندھا',
-                clinical_term: 'Right Shoulder',
-                category: 'upper_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Rotator cuff tear', 'Frozen shoulder', 'Bursitis'],
-                    common_diagnoses_ur: ['کندھے کے پٹھوں کا پھٹنا', 'کندھے کا جام ہونا', 'جوڑ کی سوزش'],
-                    red_flags: [],
-                    icd10_codes: ['M75.1', 'M75.0']
-                }
-            },
-
-            LEFT_ARM: {
-                id: 'LEFT_ARM',
+            ARMS_LEFT: {
+                id: 'ARMS_LEFT',
                 label_en: 'Left Arm',
                 label_ur: 'بایاں بازو',
-                clinical_term: 'Left Upper Extremity',
                 category: 'upper_extremity' as ZoneCategory,
-                systems: ['musculoskeletal', 'cardiovascular'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Muscle strain', 'Fracture', 'Tendinitis', 'Referred cardiac pain'],
-                    common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'ہڈی کا ٹوٹنا', 'پٹھوں کی سوزش', 'دل کے درد کی لہر'],
-                    red_flags: [
-                        {
-                            symptom: 'Sudden left arm pain with chest pressure',
-                            symptom_ur: 'سینے پر دباؤ اور بائیں بازو میں اچانک درد',
-                            severity: 'immediate' as const,
-                            action: 'Emergency cardiac evaluation',
-                            action_ur: 'فوری ڈاکٹری معائنہ کروائیں',
-                            condition: 'Acute Coronary Syndrome',
-                            condition_ur: 'ہارٹ اٹیک'
+                terminal: false,
+                children: {
+                    LEFT_SHOULDER: {
+                        id: 'LEFT_SHOULDER',
+                        label_en: 'Left Shoulder',
+                        label_ur: 'بایاں کندھا',
+                        clinical_term: 'Left Shoulder',
+                        category: 'upper_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Rotator cuff tear', 'Frozen shoulder', 'Bursitis', 'Arthritis'],
+                            common_diagnoses_ur: ['کندھے کے پٹھوں کا پھٹنا', 'کندھے کا جام ہونا', 'جوڑ کی سوزش', 'گٹھیا'],
+                            red_flags: [],
+                            icd10_codes: ['M75.1', 'M75.0']
                         }
-                    ],
-                    icd10_codes: ['M79.3'],
-                    related_zones: [
-                        { zone_id: 'LEFT_PRECORDIAL', relationship: 'referred' as const }
-                    ]
+                    },
+                    LEFT_ARM: {
+                        id: 'LEFT_ARM',
+                        label_en: 'Left Arm',
+                        label_ur: 'بایاں بازو',
+                        clinical_term: 'Left Upper Extremity',
+                        category: 'upper_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal', 'cardiovascular'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Muscle strain', 'Fracture', 'Tendinitis', 'Referred cardiac pain'],
+                            common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'ہڈی کا ٹوٹنا', 'پٹھوں کی سوزش', 'دل کے درد کی لہر'],
+                            red_flags: [
+                                {
+                                    symptom: 'Sudden left arm pain with chest pressure',
+                                    symptom_ur: 'سینے پر دباؤ اور بائیں بازو میں اچانک درد',
+                                    severity: 'immediate' as const,
+                                    action: 'Emergency cardiac evaluation',
+                                    action_ur: 'فوری ڈاکٹری معائنہ کروائیں',
+                                    condition: 'Acute Coronary Syndrome',
+                                    condition_ur: 'ہارٹ اٹیک'
+                                }
+                            ],
+                            icd10_codes: ['M79.3'],
+                            related_zones: [
+                                { zone_id: 'LEFT_PRECORDIAL', relationship: 'referred' as const }
+                            ]
+                        }
+                    },
+                    LEFT_ELBOW: {
+                        id: 'LEFT_ELBOW',
+                        label_en: 'Left Elbow',
+                        label_ur: 'بائیں کہنی',
+                        clinical_term: 'Left Elbow',
+                        category: 'upper_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Tennis elbow', 'Golfers elbow', 'Bursitis'],
+                            common_diagnoses_ur: ['ٹینس ایلبو', 'گالفرز ایلبو', 'جوڑ کی سوزش'],
+                            red_flags: [],
+                            icd10_codes: ['M77.1', 'M77.0']
+                        }
+                    },
+                    LEFT_WRIST: {
+                        id: 'LEFT_WRIST',
+                        label_en: 'Left Wrist',
+                        label_ur: 'بائیں کلائی',
+                        clinical_term: 'Left Wrist',
+                        category: 'upper_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal', 'neurological'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Carpal tunnel syndrome', 'Tendinitis', 'Fracture'],
+                            common_diagnoses_ur: ['کارپل ٹنل سنڈروم', 'پٹھوں کی سوزش', 'ہڈی کا ٹوٹنا'],
+                            red_flags: [],
+                            icd10_codes: ['G56.0', 'M65.9']
+                        }
+                    },
+                    LEFT_HAND: {
+                        id: 'LEFT_HAND',
+                        label_en: 'Left Hand',
+                        label_ur: 'بایاں ہاتھ',
+                        clinical_term: 'Left Hand',
+                        category: 'upper_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Arthritis', 'Fracture', 'Sprain', 'Tenosynovitis'],
+                            common_diagnoses_ur: ['جوڑوں کا درد / گٹھیا', 'ہڈی کا ٹوٹنا', 'موچ', 'پٹھوں کی جھلی کی سوزش'],
+                            red_flags: [],
+                            icd10_codes: ['M79.64']
+                        }
+                    }
                 }
             },
-
-            RIGHT_ARM: {
-                id: 'RIGHT_ARM',
+            ARMS_RIGHT: {
+                id: 'ARMS_RIGHT',
                 label_en: 'Right Arm',
                 label_ur: 'دایاں بازو',
-                clinical_term: 'Right Upper Extremity',
                 category: 'upper_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Muscle strain', 'Fracture', 'Tendinitis'],
-                    common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'ہڈی کا ٹوٹنا', 'پٹھوں کی سوزش'],
-                    red_flags: [],
-                    icd10_codes: ['M79.3']
-                }
-            },
-
-            LEFT_ELBOW: {
-                id: 'LEFT_ELBOW',
-                label_en: 'Left Elbow',
-                label_ur: 'بائیں کہنی',
-                clinical_term: 'Left Elbow',
-                category: 'upper_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Tennis elbow', 'Golfers elbow', 'Bursitis'],
-                    common_diagnoses_ur: ['ٹینس ایلبو', 'گالفرز ایلبو', 'جوڑ کی سوزش'],
-                    red_flags: [],
-                    icd10_codes: ['M77.1', 'M77.0']
-                }
-            },
-
-            RIGHT_ELBOW: {
-                id: 'RIGHT_ELBOW',
-                label_en: 'Right Elbow',
-                label_ur: 'دائیں کہنی',
-                clinical_term: 'Right Elbow',
-                category: 'upper_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Tennis elbow', 'Golfers elbow', 'Bursitis'],
-                    common_diagnoses_ur: ['ٹینس ایلبو', 'گالفرز ایلبو', 'جوڑ کی سوزش'],
-                    red_flags: [],
-                    icd10_codes: ['M77.1', 'M77.0']
-                }
-            },
-
-            LEFT_WRIST: {
-                id: 'LEFT_WRIST',
-                label_en: 'Left Wrist',
-                label_ur: 'بائیں کلائی',
-                clinical_term: 'Left Wrist',
-                category: 'upper_extremity' as ZoneCategory,
-                systems: ['musculoskeletal', 'neurological'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Carpal tunnel syndrome', 'Tendinitis', 'Fracture'],
-                    common_diagnoses_ur: ['کارپل ٹنل سنڈروم', 'پٹھوں کی سوزش', 'ہڈی کا ٹوٹنا'],
-                    red_flags: [],
-                    icd10_codes: ['G56.0', 'M65.9']
-                }
-            },
-
-            RIGHT_WRIST: {
-                id: 'RIGHT_WRIST',
-                label_en: 'Right Wrist',
-                label_ur: 'دائیں کلائی',
-                clinical_term: 'Right Wrist',
-                category: 'upper_extremity' as ZoneCategory,
-                systems: ['musculoskeletal', 'neurological'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Carpal tunnel syndrome', 'Tendinitis', 'Fracture'],
-                    common_diagnoses_ur: ['کارپل ٹنل سنڈروم', 'پٹھوں کی سوزش', 'ہڈی کا ٹوٹنا'],
-                    red_flags: [],
-                    icd10_codes: ['G56.0', 'M65.9']
-                }
-            },
-
-            LEFT_HAND: {
-                id: 'LEFT_HAND',
-                label_en: 'Left Hand',
-                label_ur: 'بایاں ہاتھ',
-                clinical_term: 'Left Hand',
-                category: 'upper_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Arthritis', 'Fracture', 'Sprain'],
-                    red_flags: [],
-                    icd10_codes: ['M79.64']
-                }
-            },
-
-            RIGHT_HAND: {
-                id: 'RIGHT_HAND',
-                label_en: 'Right Hand',
-                label_ur: 'دایاں ہاتھ',
-                clinical_term: 'Right Hand',
-                category: 'upper_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Arthritis', 'Fracture', 'Sprain'],
-                    red_flags: [],
-                    icd10_codes: ['M79.64']
+                terminal: false,
+                children: {
+                    RIGHT_SHOULDER: {
+                        id: 'RIGHT_SHOULDER',
+                        label_en: 'Right Shoulder',
+                        label_ur: 'دایاں کندھا',
+                        clinical_term: 'Right Shoulder',
+                        category: 'upper_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Rotator cuff tear', 'Frozen shoulder', 'Bursitis'],
+                            common_diagnoses_ur: ['کندھے کے پٹھوں کا پھٹنا', 'کندھے کا جام ہونا', 'جوڑ کی سوزش'],
+                            red_flags: [],
+                            icd10_codes: ['M75.1', 'M75.0']
+                        }
+                    },
+                    RIGHT_ARM: {
+                        id: 'RIGHT_ARM',
+                        label_en: 'Right Arm',
+                        label_ur: 'دایاں بازو',
+                        clinical_term: 'Right Upper Extremity',
+                        category: 'upper_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Muscle strain', 'Fracture', 'Tendinitis'],
+                            common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'ہڈی کا ٹوٹنا', 'پٹھوں کی سوزش'],
+                            red_flags: [],
+                            icd10_codes: ['M79.3']
+                        }
+                    },
+                    RIGHT_ELBOW: {
+                        id: 'RIGHT_ELBOW',
+                        label_en: 'Right Elbow',
+                        label_ur: 'دائیں کہنی',
+                        clinical_term: 'Right Elbow',
+                        category: 'upper_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Tennis elbow', 'Golfers elbow', 'Bursitis'],
+                            common_diagnoses_ur: ['ٹینس ایلبو', 'گالفرز ایلبو', 'جوڑ کی سوزش'],
+                            red_flags: [],
+                            icd10_codes: ['M77.1', 'M77.0']
+                        }
+                    },
+                    RIGHT_WRIST: {
+                        id: 'RIGHT_WRIST',
+                        label_en: 'Right Wrist',
+                        label_ur: 'دائیں کلائی',
+                        clinical_term: 'Right Wrist',
+                        category: 'upper_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal', 'neurological'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Carpal tunnel syndrome', 'Tendinitis', 'Fracture'],
+                            common_diagnoses_ur: ['کارپل ٹنل سنڈروم', 'پٹھوں کی سوزش', 'ہڈی کا ٹوٹنا'],
+                            red_flags: [],
+                            icd10_codes: ['G56.0', 'M65.9']
+                        }
+                    },
+                    RIGHT_HAND: {
+                        id: 'RIGHT_HAND',
+                        label_en: 'Right Hand',
+                        label_ur: 'دایاں ہاتھ',
+                        clinical_term: 'Right Hand',
+                        category: 'upper_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Arthritis', 'Fracture', 'Sprain'],
+                            common_diagnoses_ur: ['جوڑوں کا درد', 'ہڈی کا ٹوٹنا', 'موچ'],
+                            red_flags: [],
+                            icd10_codes: ['M79.64']
+                        }
+                    }
                 }
             }
         }
@@ -1148,185 +1259,196 @@ export const BODY_ZONE_TREE: Record<string, any> = {
         terminal: false,
 
         children: {
-            LEFT_HIP: {
-                id: 'LEFT_HIP',
-                label_en: 'Left Hip',
-                label_ur: 'بایاں کولہا',
-                clinical_term: 'Left Hip',
+            LEGS_LEFT: {
+                id: 'LEGS_LEFT',
+                label_en: 'Left Leg',
+                label_ur: 'بائیں ٹانگ',
                 category: 'lower_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Osteoarthritis', 'Hip fracture', 'Bursitis', 'Labral tear'],
-                    common_diagnoses_ur: ['جوڑوں کا درد', 'کولہے کی ہڈی کا ٹوٹنا', 'جوڑ کی سوزش', 'لیبرل کا پھٹنا'],
-                    red_flags: [
-                        {
-                            symptom: 'Hip pain after fall in elderly',
-                            symptom_ur: 'بزرگوں میں گرنے کے بعد کولہے کا درد',
-                            severity: 'urgent' as const,
-                            action: 'X-ray evaluation',
-                            action_ur: 'فوری ایکسرے کروائیں',
-                            condition: 'Hip fracture',
-                            condition_ur: 'کولہے کی ہڈی کا ٹوٹنا'
+                terminal: false,
+                children: {
+                    LEFT_HIP: {
+                        id: 'LEFT_HIP',
+                        label_en: 'Left Hip',
+                        label_ur: 'بایاں کولہا',
+                        clinical_term: 'Left Hip',
+                        category: 'lower_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Osteoarthritis', 'Hip fracture', 'Bursitis', 'Labral tear'],
+                            common_diagnoses_ur: ['جوڑوں کا درد', 'کولہے کی ہڈی کا ٹوٹنا', 'جوڑ کی سوزش', 'لیبرل کا پھٹنا'],
+                            red_flags: [
+                                {
+                                    symptom: 'Hip pain after fall in elderly',
+                                    symptom_ur: 'بزرگوں میں گرنے کے بعد کولہے کا درد',
+                                    severity: 'urgent' as const,
+                                    action: 'X-ray evaluation',
+                                    action_ur: 'فوری ایکسرے کروائیں',
+                                    condition: 'Hip fracture',
+                                    condition_ur: 'کولہے کی ہڈی کا ٹوٹنا'
+                                }
+                            ],
+                            icd10_codes: ['M16.1', 'S72.0']
                         }
-                    ],
-                    icd10_codes: ['M16.1', 'S72.0']
-                }
-            },
-
-            RIGHT_HIP: {
-                id: 'RIGHT_HIP',
-                label_en: 'Right Hip',
-                label_ur: 'دایاں کولہا',
-                clinical_term: 'Right Hip',
-                category: 'lower_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Osteoarthritis', 'Hip fracture', 'Bursitis'],
-                    common_diagnoses_ur: ['جوڑوں کا درد', 'کولہے کی ہڈی کا ٹوٹنا', 'جوڑ کی سوزش'],
-                    red_flags: [],
-                    icd10_codes: ['M16.1', 'S72.0']
-                }
-            },
-
-            LEFT_THIGH: {
-                id: 'LEFT_THIGH',
-                label_en: 'Left Thigh',
-                label_ur: 'بائیں ران',
-                clinical_term: 'Left Thigh',
-                category: 'lower_extremity' as ZoneCategory,
-                systems: ['musculoskeletal', 'cardiovascular'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Muscle strain', 'DVT', 'Femoral fracture'],
-                    common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'خون کا لوتھڑا (DVT)', 'ران کی ہڈی کا ٹوٹنا'],
-                    red_flags: [
-                        {
-                            symptom: 'Thigh swelling with calf pain and recent immobilization',
-                            symptom_ur: 'پنڈلی کے درد اور حال ہی میں چلنے پھرنے کی کمی کے ساتھ ران کی سوجن',
-                            severity: 'urgent' as const,
-                            action: 'Urgent D-dimer, ultrasound',
-                            action_ur: 'فوری طور پر ڈی ڈائمر ٹیسٹ اور الٹراساؤنڈ کروائیں',
-                            condition: 'Deep vein thrombosis',
-                            condition_ur: 'ڈیپ وین تھرومبوسس (خون کا لوتھڑا)'
+                    },
+                    LEFT_THIGH: {
+                        id: 'LEFT_THIGH',
+                        label_en: 'Left Thigh',
+                        label_ur: 'بائیں ران',
+                        clinical_term: 'Left Thigh',
+                        category: 'lower_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal', 'cardiovascular'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Muscle strain', 'DVT', 'Femoral fracture'],
+                            common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'خون کا لوتھڑا (DVT)', 'ران کی ہڈی کا ٹوٹنا'],
+                            red_flags: [
+                                {
+                                    symptom: 'Thigh swelling with calf pain and recent immobilization',
+                                    symptom_ur: 'پنڈلی کے درد اور حال ہی میں چلنے پھرنے کی کمی کے ساتھ ران کی سوجن',
+                                    severity: 'urgent' as const,
+                                    action: 'Urgent D-dimer, ultrasound',
+                                    action_ur: 'فوری طور پر ڈی ڈائمر ٹیسٹ اور الٹراساؤنڈ کروائیں',
+                                    condition: 'Deep vein thrombosis',
+                                    condition_ur: 'ڈیپ وین تھرومبوسس (خون کا لوتھڑا)'
+                                }
+                            ],
+                            icd10_codes: ['M79.65', 'I80.2']
                         }
-                    ],
-                    icd10_codes: ['M79.65', 'I80.2']
+                    },
+                    LEFT_KNEE: {
+                        id: 'LEFT_KNEE',
+                        label_en: 'Left Knee',
+                        label_ur: 'بایاں گھٹنا',
+                        clinical_term: 'Left Knee',
+                        category: 'lower_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        priority: 7,
+                        is_common: true,
+                        clinical: {
+                            common_diagnoses: ['Osteoarthritis', 'Meniscus tear', 'ACL injury', 'Bursitis'],
+                            common_diagnoses_ur: ['جوڑوں کا درد', 'مینیسکس کا پھٹنا', 'ACL چوٹ', 'جوڑ کی سوزش'],
+                            red_flags: [],
+                            icd10_codes: ['M17.1', 'S83.2']
+                        }
+                    },
+                    LEFT_ANKLE: {
+                        id: 'LEFT_ANKLE',
+                        label_en: 'Left Ankle',
+                        label_ur: 'بایاں ٹخنہ',
+                        clinical_term: 'Left Ankle',
+                        category: 'lower_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Ankle sprain', 'Fracture', 'Tendinitis', 'Arthritis'],
+                            common_diagnoses_ur: ['ٹخنے کی موچ', 'ہڈی کا ٹوٹنا', 'پٹھوں کی سوزش', 'گٹھیا'],
+                            red_flags: [],
+                            icd10_codes: ['S93.4', 'M77.9']
+                        }
+                    },
+                    LEFT_FOOT: {
+                        id: 'LEFT_FOOT',
+                        label_en: 'Left Foot',
+                        label_ur: 'بایاں پاؤں',
+                        clinical_term: 'Left Foot',
+                        category: 'lower_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Plantar fasciitis', 'Fracture', 'Gout', 'Neuropathy'],
+                            common_diagnoses_ur: ['پاؤں کے تلوے کی سوزش', 'ہڈی کا ٹوٹنا', 'گھٹیا (نقرص)', 'اعصابی کمزوری'],
+                            red_flags: [],
+                            icd10_codes: ['M72.2', 'M10.9']
+                        }
+                    }
                 }
             },
-
-            RIGHT_THIGH: {
-                id: 'RIGHT_THIGH',
-                label_en: 'Right Thigh',
-                label_ur: 'دائیں ران',
-                clinical_term: 'Right Thigh',
+            LEGS_RIGHT: {
+                id: 'LEGS_RIGHT',
+                label_en: 'Right Leg',
+                label_ur: 'دائیں ٹانگ',
                 category: 'lower_extremity' as ZoneCategory,
-                systems: ['musculoskeletal', 'cardiovascular'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Muscle strain', 'DVT', 'Femoral fracture'],
-                    common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'خون کا لوتھڑا (DVT)', 'ران کی ہڈی کا ٹوٹنا'],
-                    red_flags: [],
-                    icd10_codes: ['M79.65', 'I80.2']
-                }
-            },
-
-            LEFT_KNEE: {
-                id: 'LEFT_KNEE',
-                label_en: 'Left Knee',
-                label_ur: 'بایاں گھٹنا',
-                clinical_term: 'Left Knee',
-                category: 'lower_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                priority: 7,
-                is_common: true,
-                clinical: {
-                    common_diagnoses: ['Osteoarthritis', 'Meniscus tear', 'ACL injury', 'Bursitis'],
-                    common_diagnoses_ur: ['جوڑوں کا درد', 'مینیسکس کا پھٹنا', 'ACL چوٹ', 'جوڑ کی سوزش'],
-                    red_flags: [],
-                    icd10_codes: ['M17.1', 'S83.2']
-                }
-            },
-
-            RIGHT_KNEE: {
-                id: 'RIGHT_KNEE',
-                label_en: 'Right Knee',
-                label_ur: 'دایاں گھٹنا',
-                clinical_term: 'Right Knee',
-                category: 'lower_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                priority: 7,
-                is_common: true,
-                clinical: {
-                    common_diagnoses: ['Osteoarthritis', 'Meniscus tear', 'ACL injury', 'Bursitis'],
-                    common_diagnoses_ur: ['جوڑوں کا درد', 'مینیسکس کا پھٹنا', 'ACL چوٹ', 'جوڑ کی سوزش'],
-                    red_flags: [],
-                    icd10_codes: ['M17.1', 'S83.2']
-                }
-            },
-
-            LEFT_ANKLE: {
-                id: 'LEFT_ANKLE',
-                label_en: 'Left Ankle',
-                label_ur: 'بایاں ٹخنہ',
-                clinical_term: 'Left Ankle',
-                category: 'lower_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Ankle sprain', 'Fracture', 'Tendinitis', 'Arthritis'],
-                    common_diagnoses_ur: ['ٹخنے کی موچ', 'ہڈی کا ٹوٹنا', 'پٹھوں کی سوزش', 'گٹھیا'],
-                    red_flags: [],
-                    icd10_codes: ['S93.4', 'M77.9']
-                }
-            },
-
-            RIGHT_ANKLE: {
-                id: 'RIGHT_ANKLE',
-                label_en: 'Right Ankle',
-                label_ur: 'دایاں ٹخنہ',
-                clinical_term: 'Right Ankle',
-                category: 'lower_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Ankle sprain', 'Fracture', 'Tendinitis'],
-                    common_diagnoses_ur: ['ٹخنے کی موچ', 'ہڈی کا ٹوٹنا', 'پٹھوں کی سوزش'],
-                    red_flags: [],
-                    icd10_codes: ['S93.4', 'M77.9']
-                }
-            },
-
-            LEFT_FOOT: {
-                id: 'LEFT_FOOT',
-                label_en: 'Left Foot',
-                label_ur: 'بایاں پاؤں',
-                clinical_term: 'Left Foot',
-                category: 'lower_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Plantar fasciitis', 'Fracture', 'Gout', 'Neuropathy'],
-                    red_flags: [],
-                    icd10_codes: ['M72.2', 'M10.9']
-                }
-            },
-
-            RIGHT_FOOT: {
-                id: 'RIGHT_FOOT',
-                label_en: 'Right Foot',
-                label_ur: 'دایاں پاؤں',
-                clinical_term: 'Right Foot',
-                category: 'lower_extremity' as ZoneCategory,
-                systems: ['musculoskeletal'] as BodySystem[],
-                terminal: true,
-                clinical: {
-                    common_diagnoses: ['Plantar fasciitis', 'Fracture', 'Gout', 'Neuropathy'],
-                    red_flags: [],
-                    icd10_codes: ['M72.2', 'M10.9']
+                terminal: false,
+                children: {
+                    RIGHT_HIP: {
+                        id: 'RIGHT_HIP',
+                        label_en: 'Right Hip',
+                        label_ur: 'دایاں کولہا',
+                        clinical_term: 'Right Hip',
+                        category: 'lower_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Osteoarthritis', 'Hip fracture', 'Bursitis'],
+                            common_diagnoses_ur: ['جوڑوں کا درد', 'کولہے کی ہڈی کا ٹوٹنا', 'جوڑ کی سوزش'],
+                            red_flags: [],
+                            icd10_codes: ['M16.1', 'S72.0']
+                        }
+                    },
+                    RIGHT_THIGH: {
+                        id: 'RIGHT_THIGH',
+                        label_en: 'Right Thigh',
+                        label_ur: 'دائیں ران',
+                        clinical_term: 'Right Thigh',
+                        category: 'lower_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal', 'cardiovascular'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Muscle strain', 'DVT', 'Femoral fracture'],
+                            common_diagnoses_ur: ['پٹھوں کا کھچاؤ', 'خون کا لوتھڑا (DVT)', 'ران کی ہڈی کا ٹوٹنا'],
+                            red_flags: [],
+                            icd10_codes: ['M79.65', 'I80.2']
+                        }
+                    },
+                    RIGHT_KNEE: {
+                        id: 'RIGHT_KNEE',
+                        label_en: 'Right Knee',
+                        label_ur: 'دایاں گھٹنا',
+                        clinical_term: 'Right Knee',
+                        category: 'lower_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        priority: 7,
+                        is_common: true,
+                        clinical: {
+                            common_diagnoses: ['Osteoarthritis', 'Meniscus tear', 'ACL injury', 'Bursitis'],
+                            common_diagnoses_ur: ['جوڑوں کا درد', 'مینیسکس کا پھٹنا', 'ACL چوٹ', 'جوڑ کی سوزش'],
+                            red_flags: [],
+                            icd10_codes: ['M17.1', 'S83.2']
+                        }
+                    },
+                    RIGHT_ANKLE: {
+                        id: 'RIGHT_ANKLE',
+                        label_en: 'Right Ankle',
+                        label_ur: 'دایاں ٹخنہ',
+                        clinical_term: 'Right Ankle',
+                        category: 'lower_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Ankle sprain', 'Fracture', 'Tendinitis'],
+                            common_diagnoses_ur: ['ٹخنے کی موچ', 'ہڈی کا ٹوٹنا', 'پٹھوں کی سوزش'],
+                            red_flags: [],
+                            icd10_codes: ['S93.4', 'M77.9']
+                        }
+                    },
+                    RIGHT_FOOT: {
+                        id: 'RIGHT_FOOT',
+                        label_en: 'Right Foot',
+                        label_ur: 'دایاں پاؤں',
+                        clinical_term: 'Right Foot',
+                        category: 'lower_extremity' as ZoneCategory,
+                        systems: ['musculoskeletal'] as BodySystem[],
+                        terminal: true,
+                        clinical: {
+                            common_diagnoses: ['Plantar fasciitis', 'Fracture', 'Gout', 'Neuropathy'],
+                            common_diagnoses_ur: ['پاؤں کے تلوے کی سوزش', 'ہڈی کا ٹوٹنا', 'گھٹیا (نقرص)', 'اعصابی کمزوری'],
+                            red_flags: [],
+                            icd10_codes: ['M72.2', 'M10.9']
+                        }
+                    }
                 }
             }
         }

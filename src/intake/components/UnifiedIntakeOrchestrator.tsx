@@ -1,11 +1,6 @@
-/**
- * UnifiedIntakeOrchestrator.tsx
- * Enhanced medical intake orchestrator with clean phase management
- * Integrates with existing clinical models (EncounterIntake, PatientAccount)
- */
-
-import React, { useState } from 'react';
-import { X, ChevronRight, ChevronLeft, AlertCircle, CheckCircle2, Heart, Activity, Thermometer, User, History as HistoryIcon, MapPin, ClipboardList, Clock, Plus } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, ChevronRight, ChevronLeft, AlertCircle, CheckCircle2, Heart, Activity, Thermometer, User, History as HistoryIcon, MapPin, ClipboardList, Clock, Plus, Bot, Send, Brain } from 'lucide-react';
+import { realTimeAIIntakeService } from '../services/RealTimeAIIntake.service';
 import { WhyAreYouHereScreen } from '../steps/WhyAreYouHereScreen';
 import { TimelineStep } from '../steps/TimelineStep';
 import { TreeExecutionHost } from './TreeExecutionHost';
@@ -71,10 +66,11 @@ const PHASES = {
     HEALTH_HISTORY: 'health_history',           // 4. Health Profile (First-time)
     FAMILY_HISTORY: 'family_history',           // 5. Family History
     BODY_MAP: 'body_map',                       // 6. Interactive Body Map
-    PAIN_DETAILS: 'pain_details',               // 7. Enhanced Pain Details
-    TIMELINE: 'timeline',                        // 8. Symptom Timeline
-    SYMPTOM_QUESTIONS: 'symptom_questions',     // 9. Context-Aware Questions
-    REVIEW_AND_BOOK: 'review_and_book'          // 10. Review Summary + Appointment Booking
+    AI_CHAT: 'ai_chat',                         // 7. NEW: Conversational Refinement
+    PAIN_DETAILS: 'pain_details',               // 8. Enhanced Pain Details
+    TIMELINE: 'timeline',                        // 9. Symptom Timeline
+    SYMPTOM_QUESTIONS: 'symptom_questions',     // 10. Context-Aware Questions
+    REVIEW_AND_BOOK: 'review_and_book'          // 11. Review Summary + Appointment Booking
 } as const;
 
 const EMERGENCY_QUESTIONS: Record<Language, EmergencyQuestion[]> = {
@@ -200,6 +196,13 @@ const UI_LABELS: Record<Language, any> = {
             remove: "Remove",
             name: "Name",
             dose: "Dose"
+        },
+        ai_chat: {
+            title: 'AI Intake Assistant',
+            intro: 'Tell me more about the pain or discomfort you are feeling. Be as specific as possible.',
+            thinking: 'Analyzing your information...',
+            placeholder: 'Sharp pain in lower left belly...',
+            finish: 'Finish AI Assessment'
         }
     },
     ur: {
@@ -253,6 +256,13 @@ const UI_LABELS: Record<Language, any> = {
             remove: "ہٹائیں",
             name: "دوا کا نام",
             dose: "مقدار (Dose)"
+        },
+        ai_chat: {
+            title: 'AI انٹیک اسسٹنٹ',
+            intro: 'اپنی تکلیف یا درد کے بارے میں مزید بتائیں۔ جتنا ممکن ہو سکے واضح طور پر بیان کریں۔',
+            thinking: 'آپ کی معلومات کا جائزہ لیا جا رہا ہے...',
+            placeholder: 'پیٹ کے نچلے بائیں حصے میں تیز درد ہے...',
+            finish: 'AI جائزہ مکمل کریں'
         }
     },
 };
@@ -260,6 +270,118 @@ const UI_LABELS: Record<Language, any> = {
 // ============================================================================
 // PHASE COMPONENTS
 // ============================================================================
+
+const AIChatPhase: React.FC<{
+    language: Language;
+    initialComplaint: string;
+    onComplete: (data: any) => void;
+    onBack: () => void;
+}> = ({ language, initialComplaint, onComplete, onBack }) => {
+    const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [aiState, setAiState] = useState<any>(null);
+    const chatRef = useRef<HTMLDivElement>(null);
+
+    const labels = UI_LABELS[language].ai_chat;
+
+    useEffect(() => {
+        if (messages.length === 0) {
+            setMessages([{ sender: 'bot', text: labels.intro }]);
+        }
+    }, [language, labels.intro]);
+
+    useEffect(() => {
+        chatRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const handleSend = async () => {
+        if (!input.trim() || isLoading) return;
+        const userMsg = input.trim();
+        setInput('');
+        setMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
+        setIsLoading(true);
+
+        try {
+            const history = messages.map(m => ({ sender: m.sender as 'user' | 'bot', text: m.text }));
+            const response = await realTimeAIIntakeService.processResponse(userMsg, history, language);
+
+            setAiState(response.intake_state);
+            setMessages(prev => [...prev, { sender: 'bot', text: response.next_question }]);
+        } catch (error) {
+            console.error('AI Chat Phase Error:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="flex flex-col h-[550px] bg-white rounded-2xl shadow-inner border-2 border-slate-100 overflow-hidden">
+            <div className="p-4 bg-slate-800 text-white flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+                        <Bot size={20} />
+                    </div>
+                    <div>
+                        <h3 className="font-bold">{labels.title}</h3>
+                        <p className="text-[10px] text-blue-300 uppercase tracking-widest font-black">AI Diagnosis-Free Intake</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50">
+                {messages.map((m, i) => (
+                    <div key={i} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[85%] p-4 rounded-2xl shadow-sm text-sm ${m.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 border border-slate-100'
+                            }`}>
+                            {m.text}
+                        </div>
+                    </div>
+                ))}
+                {isLoading && (
+                    <div className="flex justify-start">
+                        <div className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-75"></div>
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150"></div>
+                        </div>
+                    </div>
+                )}
+                <div ref={chatRef} />
+            </div>
+
+            <div className="p-4 bg-white border-t border-slate-100">
+                <div className="flex gap-2 mb-2">
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        onKeyPress={e => e.key === 'Enter' && handleSend()}
+                        placeholder={labels.placeholder}
+                        className="flex-1 px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 outline-none transition-all text-sm"
+                    />
+                    <button
+                        onClick={handleSend}
+                        disabled={isLoading || !input.trim()}
+                        className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md"
+                    >
+                        <Send size={20} />
+                    </button>
+                </div>
+
+                {aiState && aiState.confidence?.location_confidence_0_to_1 > 0.7 && (
+                    <button
+                        onClick={() => onComplete(aiState)}
+                        className="w-full py-3 mt-2 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-lg shadow-green-100 flex items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-2"
+                    >
+                        <CheckCircle2 size={18} />
+                        {labels.finish}
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+};
 
 const EmergencyScreen: React.FC<{
     language: Language;
@@ -1329,6 +1451,15 @@ const UnifiedIntakeOrchestrator: React.FC<OrchestratorProps> = ({
             confidence: 95
         };
 
+        // AI Details
+        if (intakeData.aiClinicalDetails) {
+            encounter.aiClinicalDetails = intakeData.aiClinicalDetails;
+            if (intakeData.aiClinicalDetails.chief_complaint) {
+                encounter.chiefComplaint = intakeData.aiClinicalDetails.chief_complaint;
+                encounter.complaintText = intakeData.aiClinicalDetails.chief_complaint;
+            }
+        }
+
         onComplete(encounter);
     };
 
@@ -1538,6 +1669,15 @@ const UnifiedIntakeOrchestrator: React.FC<OrchestratorProps> = ({
                                 // Set primary complaint (can be empty for now from professional map)
                                 setIntakeData(prev => ({ ...prev, primaryComplaint: data.complaint || '' }));
                             }}
+                            onBack={handleBack}
+                        />
+                    )}
+
+                    {currentPhase === PHASES.AI_CHAT && (
+                        <AIChatPhase
+                            language={language || 'en'}
+                            initialComplaint={intakeData.primaryComplaint || ''}
+                            onComplete={(data) => handlePhaseComplete('aiClinicalDetails', data)}
                             onBack={handleBack}
                         />
                     )}

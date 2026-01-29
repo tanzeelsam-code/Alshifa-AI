@@ -107,6 +107,9 @@ export interface EncounterIntake {
 
     // Generated Output
     generatedNote?: ClinicalNote;
+
+    // AI Details
+    aiClinicalDetails?: any;
 }
 
 export enum ComplaintType {
