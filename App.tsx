@@ -446,12 +446,16 @@ const App: React.FC = () => {
         const loadingToast = toast.loading('Creating account...');
         try {
           // Normalize email for Supabase (must be valid email format)
-          // Use ID Card No as part of the unique email identifier for patients
-          const identifier = (newUser.role === Role.PATIENT && newUser.idCardNo)
-            ? newUser.idCardNo.replace(/[-\s]/g, '')
-            : (newUser.mobile || newUser.name || `user_${Date.now()}`);
+          // Use Mobile Number as the unique identifier for all roles
+          let identifier: string;
+          
+          if (newUser.mobile) {
+            identifier = newUser.mobile.replace(/[^\d]/g, '');
+          } else {
+            identifier = newUser.name?.replace(/\s+/g, '').toLowerCase() || \`user_\${Date.now()}\`;
+          }
 
-          const email = identifier.includes('@') ? identifier : `${identifier.toLowerCase()}@alshifa.ai`;
+          const email = identifier.includes('@') ? identifier : `${identifier}@alshifa.ai`;
 
           await sbRegister(
             email,
