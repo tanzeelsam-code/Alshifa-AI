@@ -540,7 +540,16 @@ const App: React.FC = () => {
           </ErrorBoundary>
         );
       case AppState.SESSION_TYPE_SELECTION:
-        if (!isPatientRole(loggedInUser?.role)) return <div className="text-center p-8"><p>{uiStrings[language].accessDeniedPatient}</p><button onClick={handleStartOver} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">{uiStrings[language].backToLogin}</button></div>;
+        console.log('🔍 [DEBUG] SESSION_TYPE_SELECTION render:', {
+          loggedInUser: !!loggedInUser,
+          role: loggedInUser?.role,
+          isPatient: isPatientRole(loggedInUser?.role)
+        });
+        if (!isPatientRole(loggedInUser?.role)) {
+          console.log('❌ [DEBUG] Access denied - not a patient role');
+          return <div className="text-center p-8"><p>{uiStrings[language].accessDeniedPatient}</p><button onClick={handleStartOver} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">{uiStrings[language].backToLogin}</button></div>;
+        }
+        console.log('✅ [DEBUG] Rendering SessionTypeSelection');
         return <SessionTypeSelection onNewSession={() => setAppState(AppState.DOCTOR_SELECTION)} onHistory={() => setAppState(AppState.HISTORY_VIEW)} onDashboard={() => setAppState(AppState.PATIENT_DASHBOARD)} onMedication={() => setAppState(AppState.MEDICATION_DASHBOARD)} onBack={handleStartOver} />;
       case AppState.MEDICATION_DASHBOARD:
         if (!isPatientRole(loggedInUser?.role)) return <div className="text-center p-8"><p>{uiStrings[language].accessDeniedPatient}</p><button onClick={handleStartOver} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">{uiStrings[language].backToLogin}</button></div>;
