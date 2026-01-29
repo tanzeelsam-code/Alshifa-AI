@@ -1,11 +1,12 @@
 -- Migration: Create users table for unified authentication and profile storage
 -- Target: public schema in Supabase
+-- Note: role column MUST use lowercase values per users_role_check constraint: 'patient', 'doctor', 'admin'
 
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email VARCHAR(255) UNIQUE NOT NULL,
-    role VARCHAR(50) NOT NULL DEFAULT 'Patient',
-    display_name VARCHAR(255),
+    role VARCHAR(50) NOT NULL DEFAULT 'patient',  -- Must be lowercase: 'patient', 'doctor', or 'admin'
+    full_name VARCHAR(255),  -- User's display name
     mobile VARCHAR(20),
     id_card_no VARCHAR(50),
     date_of_birth DATE,

@@ -800,6 +800,7 @@ const App: React.FC = () => {
                 <button
                   onClick={() => { /* setLanguage is in LanguageSwitcher but we can trigger it here */ }}
                   className="bg-white/20 border-2 border-white text-white px-4 py-1.5 rounded-full text-sm font-bold hover:scale-105 transition-transform"
+                  title="Change Language"
                 >
                   <LanguageSwitcher />
                 </button>

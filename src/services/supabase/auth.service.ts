@@ -20,6 +20,23 @@ export interface SupabaseUserProfile {
 }
 
 /**
+ * Normalize role to lowercase for Supabase database constraint
+ * The database users_role_check constraint requires lowercase: 'patient', 'doctor', 'admin'
+ */
+const normalizeRole = (role: Role | string): string => {
+    const roleStr = role.toString().toLowerCase();
+
+    // Map enum values to database values
+    if (roleStr.includes('patient')) return 'patient';
+    if (roleStr.includes('doctor') || roleStr.includes('physician')) return 'doctor';
+    if (roleStr.includes('admin')) return 'admin';
+
+    // Fallback to patient for unknown roles
+    console.warn(`⚠️ Unknown role "${role}", defaulting to 'patient'`);
+    return 'patient';
+};
+
+/**
  * Register new user with role
  */
 export const registerUser = async (
@@ -33,13 +50,16 @@ export const registerUser = async (
 ): Promise<SupabaseUserProfile> => {
     try {
         // Create authentication account
+        // Normalize role to lowercase for database constraint
+        const normalizedRole = normalizeRole(role);
+
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email,
             password,
             options: {
                 data: {
                     displayName,
-                    role,
+                    role: normalizedRole,
                 },
             },
         });
@@ -69,7 +89,7 @@ export const registerUser = async (
             .upsert({
                 id: userProfile.uid,
                 email: userProfile.email,
-                role: userProfile.role,
+                role: normalizedRole,  // Use normalized lowercase role
                 full_name: userProfile.displayName,
                 mobile: userProfile.mobile,
                 id_card_no: userProfile.idCardNo,
@@ -132,11 +152,17 @@ export const signIn = async (
             console.log('✅ User signed in:', email);
         }
 
+        // Normalize role in case database has legacy capitalized values
+        const normalizedRole = normalizeRole(profile.role);
+
         return {
             uid: profile.id,
             email: profile.email,
-            role: profile.role,
+            role: normalizedRole as Role,
             displayName: profile.full_name,
+            mobile: profile.mobile,
+            idCardNo: profile.id_card_no,
+            dateOfBirth: profile.date_of_birth,
             emailVerified: !!data.user.email_confirmed_at,
             createdAt: profile.created_at,
             lastLoginAt: data.user.last_sign_in_at || profile.created_at,
