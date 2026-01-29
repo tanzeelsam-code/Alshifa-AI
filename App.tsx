@@ -117,31 +117,44 @@ const App: React.FC = () => {
   useEffect(() => {
     const syncAuth = async () => {
       if (authUser && !loggedInUser) {
-        console.log(`🔄 [Auth] Syncing Supabase user: ${authUser.email} (${authUser.role})`);
+        console.log(`🔄 [Auth] Syncing Supabase user: ${authUser.phone} (${authUser.role})`);
+
+        // Get display name from phone or email
+        const displayName = authUser.displayName || authUser.phone || 'User';
 
         // Map SupabaseUserProfile to legacy User type
         const user: User = {
           id: authUser.uid,
-          name: authUser.displayName || authUser.email.split('@')[0],
-          mobile: authUser.mobile || '00000',
+          name: displayName,
+          mobile: authUser.phone || '00000',
           idCardNo: authUser.idCardNo || 'PENDING',
-          role: authUser.role,
+          role: authUser.role as Role,
           language: language,
           password: '***', // Secret
           account: {
             id: authUser.uid,
-            fullName: authUser.displayName || authUser.email.split('@')[0],
+            fullName: displayName,
             dateOfBirth: authUser.dateOfBirth || '2000-01-01',
             idCardNo: authUser.idCardNo || 'PENDING',
             sexAtBirth: 'prefer_not_to_say',
             country: 'Pakistan',
             language: language,
-            phoneNumber: authUser.mobile || '00000',
+            phoneNumber: authUser.phone || '00000',
             createdAt: authUser.createdAt
           }
         };
 
         setLoggedInUser(user);
+
+        // NAVIGATE TO MAIN PAGE after successful login
+        const roleStr = String(user.role).toLowerCase();
+        if (roleStr === 'patient') {
+          setAppState(AppState.SESSION_TYPE_SELECTION);
+        } else if (roleStr === 'doctor') {
+          setAppState(AppState.DOCTOR_DASHBOARD);
+        } else if (roleStr === 'admin') {
+          setAppState(AppState.ADMIN_DASHBOARD);
+        }
 
         // Load secondary data
         if (user.role === Role.PATIENT) {
