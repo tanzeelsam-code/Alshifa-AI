@@ -1326,6 +1326,9 @@ const UnifiedIntakeOrchestrator: React.FC<OrchestratorProps> = ({
     // Start with Emergency Triage (Phase 2) - most critical first
     // Will add DATE_OF_BIRTH and EXPRESS_CHECKIN logic shortly
     const [currentPhase, setCurrentPhase] = useState<string>(PHASES.EMERGENCY_TRIAGE);
+
+    // Debug: Log current phase on every render
+    console.log('🎯 Current phase:', currentPhase, '| Available phases:', Object.values(PHASES));
     const [intakeData, setIntakeData] = useState<IntakeData>({
         emergencyResponses: {},
         symptomResponses: {}
@@ -1333,6 +1336,7 @@ const UnifiedIntakeOrchestrator: React.FC<OrchestratorProps> = ({
     const [showEmergencyAlert, setShowEmergencyAlert] = useState(false);
 
     const handlePhaseComplete = (key: keyof IntakeData, data: any) => {
+        console.log('🔄 handlePhaseComplete called:', { key, data, currentPhase });
         const updatedData = { ...intakeData, [key]: data };
         setIntakeData(updatedData);
 
@@ -1353,23 +1357,29 @@ const UnifiedIntakeOrchestrator: React.FC<OrchestratorProps> = ({
         // Navigate to next phase, skipping baseline if already completed
         const phases = Object.values(PHASES);
         let currentIndex = phases.indexOf(currentPhase as any);
+        console.log('📍 Phase navigation:', { phases, currentIndex, currentPhase, hasBaseline: patientAccount.hasCompletedBaseline });
         currentIndex++;
 
         while (currentIndex < phases.length) {
             const nextPhase = phases[currentIndex];
+            console.log('🔍 Checking phase:', { nextPhase, currentIndex });
             // Skip EXPRESS_CHECKIN for new patients (no baseline yet)
             if (!patientAccount.hasCompletedBaseline && nextPhase === PHASES.EXPRESS_CHECKIN) {
+                console.log('⏭️ Skipping EXPRESS_CHECKIN');
                 currentIndex++;
                 continue;
             }
             // Skip baseline phases if already completed
             if (patientAccount.hasCompletedBaseline && nextPhase === PHASES.FAMILY_HISTORY) {
+                console.log('⏭️ Skipping FAMILY_HISTORY');
                 currentIndex++;
                 continue;
             }
+            console.log('✅ Setting next phase:', nextPhase);
             setCurrentPhase(nextPhase);
             return;
         }
+        console.log('❌ No more phases to navigate to');
     };
 
     const handleBack = () => {
@@ -1625,6 +1635,7 @@ const UnifiedIntakeOrchestrator: React.FC<OrchestratorProps> = ({
                         />
                     )}
 
+                    {(() => { console.log('🏥 HEALTH_HISTORY check:', { currentPhase, expected: PHASES.HEALTH_HISTORY, match: currentPhase === PHASES.HEALTH_HISTORY }); return null; })()}
                     {currentPhase === PHASES.HEALTH_HISTORY && (
                         <HealthHistoryStep
                             language={language}

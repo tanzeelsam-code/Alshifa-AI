@@ -117,7 +117,7 @@ const App: React.FC = () => {
   // ============================================================================
   const { language } = useLanguage();
   const strings = uiStrings[language];
-  const { user: authUser, loading: isLoadingAuth, login: sbLogin, register: sbRegister } = useAuth();
+  const { user: authUser, loading: isLoadingAuth, login: sbLogin, register: sbRegister, logout: sbLogout } = useAuth();
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
   const [appState, setAppState] = useState<AppState>(AppState.DISCLAIMER); // Changed from ROLE_SELECTION
@@ -375,14 +375,26 @@ const App: React.FC = () => {
     localStorage.setItem('alshifa_med_logs', encryptData(JSON.stringify(updated)));
   };
 
-  const handleStartOver = () => {
+  const handleStartOver = async () => {
     // Audit log logout event
     if (loggedInUser) {
       AuditService.log(loggedInUser.id!, loggedInUser.name!, loggedInUser.role, AuditAction.LOGOUT, 'User', loggedInUser.id!, 'User logged out');
     }
-    setCurrentUser(null); setLoggedInUser(null);
-    setSelectedDoctor(null); setAppointment(null);
+
+    // Clear local state
+    setCurrentUser(null);
+    setLoggedInUser(null);
+    setSelectedDoctor(null);
+    setAppointment(null);
     clearUserKey();
+
+    // Actually sign out of Supabase to clear the session
+    try {
+      await sbLogout();
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
+
     setAppState(AppState.ROLE_SELECTION);
   };
 
