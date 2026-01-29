@@ -87,6 +87,25 @@ const MOCK_PATIENT_ACCOUNT: any = {
   riskProfile: { smokingStatus: 'Never', alcoholUse: 'None' }
 };
 
+// Helper function to check role (handles both string and enum)
+const isPatientRole = (role: any): boolean => {
+  if (!role) return false;
+  const roleStr = String(role).toLowerCase();
+  return roleStr === 'patient';
+};
+
+const isDoctorRole = (role: any): boolean => {
+  if (!role) return false;
+  const roleStr = String(role).toLowerCase();
+  return roleStr === 'doctor' || roleStr === 'physician';
+};
+
+const isAdminRole = (role: any): boolean => {
+  if (!role) return false;
+  const roleStr = String(role).toLowerCase();
+  return roleStr === 'admin';
+};
+
 const App: React.FC = () => {
   // ============================================================================
   // AUTHENTICATION STATE (Phase 1: Core Auth Layer)
@@ -514,17 +533,17 @@ const App: React.FC = () => {
           </ErrorBoundary>
         );
       case AppState.PATIENT_DASHBOARD:
-        if (loggedInUser?.role !== Role.PATIENT) return <div className="text-center p-8"><p>{uiStrings[language].accessDeniedPatient}</p><button onClick={handleStartOver} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">{uiStrings[language].backToLogin}</button></div>;
+        if (!isPatientRole(loggedInUser?.role)) return <div className="text-center p-8"><p>{uiStrings[language].accessDeniedPatient}</p><button onClick={handleStartOver} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">{uiStrings[language].backToLogin}</button></div>;
         return (
           <ErrorBoundary componentName="PatientDashboard">
             <PatientDashboard user={loggedInUser!} onBack={() => setAppState(AppState.SESSION_TYPE_SELECTION)} summaries={allPatientSummaries} onStartCall={() => { }} allDoctors={allDoctors} onUpdateSummary={handleUpdateSummary} />
           </ErrorBoundary>
         );
       case AppState.SESSION_TYPE_SELECTION:
-        if (loggedInUser?.role !== Role.PATIENT) return <div className="text-center p-8"><p>{uiStrings[language].accessDeniedPatient}</p><button onClick={handleStartOver} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">{uiStrings[language].backToLogin}</button></div>;
+        if (!isPatientRole(loggedInUser?.role)) return <div className="text-center p-8"><p>{uiStrings[language].accessDeniedPatient}</p><button onClick={handleStartOver} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">{uiStrings[language].backToLogin}</button></div>;
         return <SessionTypeSelection onNewSession={() => setAppState(AppState.DOCTOR_SELECTION)} onHistory={() => setAppState(AppState.HISTORY_VIEW)} onDashboard={() => setAppState(AppState.PATIENT_DASHBOARD)} onMedication={() => setAppState(AppState.MEDICATION_DASHBOARD)} onBack={handleStartOver} />;
       case AppState.MEDICATION_DASHBOARD:
-        if (loggedInUser?.role !== Role.PATIENT) return <div className="text-center p-8"><p>{uiStrings[language].accessDeniedPatient}</p><button onClick={handleStartOver} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">{uiStrings[language].backToLogin}</button></div>;
+        if (!isPatientRole(loggedInUser?.role)) return <div className="text-center p-8"><p>{uiStrings[language].accessDeniedPatient}</p><button onClick={handleStartOver} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">{uiStrings[language].backToLogin}</button></div>;
         return (
           <ErrorBoundary componentName="MedicationDashboard">
             <MedicationProvider>
