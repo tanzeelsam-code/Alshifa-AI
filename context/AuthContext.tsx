@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                                 uid: profile.id,
                                 email: profile.email,
                                 role: profile.role,
-                                displayName: profile.display_name,
+                                displayName: profile.full_name,
                                 mobile: profile.mobile,
                                 idCardNo: profile.id_card_no,
                                 dateOfBirth: profile.date_of_birth,
