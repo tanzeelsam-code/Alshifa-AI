@@ -1357,6 +1357,11 @@ const UnifiedIntakeOrchestrator: React.FC<OrchestratorProps> = ({
 
         while (currentIndex < phases.length) {
             const nextPhase = phases[currentIndex];
+            // Skip EXPRESS_CHECKIN for new patients (no baseline yet)
+            if (!patientAccount.hasCompletedBaseline && nextPhase === PHASES.EXPRESS_CHECKIN) {
+                currentIndex++;
+                continue;
+            }
             // Skip baseline phases if already completed
             if (patientAccount.hasCompletedBaseline && nextPhase === PHASES.FAMILY_HISTORY) {
                 currentIndex++;
