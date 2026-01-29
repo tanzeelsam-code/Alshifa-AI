@@ -14,9 +14,10 @@ export const setDocument = async <T>(
     data: T
 ): Promise<void> => {
     try {
+        // FIX: Put id LAST to prevent data.id from overwriting
         const { error } = await supabase
             .from(tableName)
-            .upsert({ id, ...data });
+            .upsert({ ...data, id });
 
         if (error) throw error;
 
@@ -158,7 +159,8 @@ export const listenToDocument = <T>(
             table: tableName,
             filter: `id=eq.${id}`
         }, (payload) => {
-            callback(payload.new as T);
+            // FIX: Handle DELETE events where payload.new is null
+            callback((payload.new as T) ?? null);
         })
         .subscribe();
 

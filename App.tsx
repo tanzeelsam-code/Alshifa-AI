@@ -420,20 +420,14 @@ const App: React.FC = () => {
       case AppState.LOGIN: return <Login role={currentUser?.role!} onLogin={async (creds) => {
         const loadingToast = toast.loading('Authenticating...');
         try {
-          // Normalize email for Supabase
-          // For patients: convert mobile to email format (remove +, spaces, etc.)
-          const identifier = creds.identifier;
-          let email: string;
-
-          if (identifier.includes('@')) {
-            email = identifier;
-          } else {
-            // Remove all non-numeric characters from mobile number
-            const cleanedMobile = identifier.replace(/[^\d]/g, '');
-            email = `${cleanedMobile}@alshifa.ai`;
-          }
-
-          await sbLogin(email, creds.password!);
+          // Use the new phone-first API
+          await sbLogin({
+            password: creds.password!,
+            ...(creds.loginType === 'phone'
+              ? { phone: creds.identifier }
+              : { email: creds.identifier }
+            ),
+          });
           toast.dismiss(loadingToast);
         } catch (error: any) {
           console.error('Login error:', error);
@@ -445,22 +439,27 @@ const App: React.FC = () => {
       case AppState.REGISTRATION: return <RegistrationForm user={currentUser!} onComplete={async (newUser) => {
         const loadingToast = toast.loading('Creating account...');
         try {
-          // Use email directly from registration form
+          // Use the new phone-first RegisterInput API
+          const phone = (newUser as any).phone || newUser.mobile;
           const email = (newUser as any).email;
-          
-          if (!email) {
-            throw new Error('Email is required for registration');
+          const dateOfBirth = newUser.account?.dateOfBirth;
+
+          if (!phone) {
+            throw new Error('Phone number is required for registration');
+          }
+          if (!dateOfBirth) {
+            throw new Error('Date of birth is required for registration');
           }
 
-          await sbRegister(
-            email,
-            newUser.password!,
-            newUser.role as Role,
-            newUser.name,
-            newUser.mobile,
-            newUser.idCardNo,
-            newUser.account?.dateOfBirth
-          );
+          await sbRegister({
+            phone,
+            password: newUser.password!,
+            role: newUser.role as Role,
+            dateOfBirth,
+            displayName: newUser.name,
+            email: email || undefined,
+            idCardNo: newUser.idCardNo,
+          });
           toast.dismiss(loadingToast);
           toast.success('Registration successful!');
           // useEffect will catch authUser change and setLoggedInUser

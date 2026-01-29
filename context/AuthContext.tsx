@@ -12,6 +12,9 @@ import {
     onAuthStateChange,
     SupabaseUserProfile as UserProfile,
     resetPassword as supabaseResetPassword,
+    RegisterInput,
+    SignInInput,
+    DbRole,
 } from '../src/services/supabase/auth.service';
 import { supabase } from '../src/lib/supabase';
 import toast from 'react-hot-toast';
@@ -20,8 +23,8 @@ interface AuthContextType {
     user: UserProfile | null;
     sessionUser: any | null;
     loading: boolean;
-    register: (email: string, password: string, role: Role, displayName?: string) => Promise<void>;
-    login: (email: string, password: string) => Promise<void>;
+    register: (input: RegisterInput) => Promise<void>;
+    login: (input: SignInInput) => Promise<void>;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
     resetPassword: (email: string) => Promise<void>;
@@ -93,12 +96,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         if (profile) {
                             const userProfile: UserProfile = {
                                 uid: profile.id,
-                                email: profile.email,
+                                phone: profile.mobile || '',
+                                email: profile.email ?? null,
                                 role: profile.role,
                                 displayName: profile.full_name,
-                                mobile: profile.mobile,
                                 idCardNo: profile.id_card_no,
-                                dateOfBirth: profile.date_of_birth,
+                                dateOfBirth: profile.date_of_birth || '',
                                 emailVerified: !!sbUser.email_confirmed_at,
                                 createdAt: profile.created_at,
                                 lastLoginAt: sbUser.last_sign_in_at || profile.created_at,
@@ -156,39 +159,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
-    const register = async (
-        email: string,
-        password: string,
-        role: Role,
-        displayName?: string,
-        mobile?: string,
-        idCardNo?: string,
-        dateOfBirth?: string
-    ): Promise<void> => {
+    const register = async (input: RegisterInput): Promise<void> => {
         try {
-            const profile = await registerUser(email, password, role, displayName, mobile, idCardNo, dateOfBirth);
+            const profile = await registerUser(input);
             setUser(profile);
 
             // Also save to localStorage for backwards compatibility
             localStorage.setItem('alshifa_current_user', JSON.stringify(profile));
 
-            toast.success('Registration successful! Please verify your email.');
+            toast.success('Registration successful!');
         } catch (error: any) {
             toast.error(error.message || 'Registration failed');
             throw error;
         }
     };
 
-    const login = async (email: string, password: string): Promise<void> => {
+    const login = async (input: SignInInput): Promise<void> => {
         try {
-            const profile = await signIn(email, password);
+            const profile = await signIn(input);
             setUser(profile);
 
             // Also save to localStorage
             localStorage.setItem('alshifa_current_user', JSON.stringify(profile));
 
             resetInactivityTimer();
-            toast.success(`Welcome back, ${profile.displayName || email}!`);
+            toast.success(`Welcome back, ${profile.displayName || 'User'}!`);
         } catch (error: any) {
             toast.error(error.message || 'Login failed');
             throw error;

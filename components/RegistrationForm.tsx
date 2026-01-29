@@ -57,16 +57,25 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ user, onComplete, o
     }
 
     if (user.role === Role.PATIENT) {
-      if (!name.trim() || !email.trim() || !dob.trim() || !idCardNo.trim() || !country.trim()) {
+      // Phone and DOB are REQUIRED
+      if (!name.trim() || !mobile.trim() || !dob.trim() || !idCardNo.trim() || !country.trim()) {
         toast.error(strings.fillAllFields);
         return;
       }
 
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        toast.error(language === 'ur' ? 'براہ کرم درست ای میل درج کریں' : 'Please enter a valid email address');
+      // Validate phone format
+      if (!validateMobile(mobile)) {
+        toast.error(language === 'ur' ? 'براہ کرم درست فون نمبر درج کریں' : 'Please enter a valid phone number');
         return;
+      }
+
+      // Validate email format only if provided (email is optional)
+      if (email.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          toast.error(language === 'ur' ? 'براہ کرم درست ای میل درج کریں' : 'Please enter a valid email address');
+          return;
+        }
       }
 
       // Generate ID using a more stable pattern for production
@@ -96,7 +105,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ user, onComplete, o
         ...user,
         name: name.trim(),
         id: newId,
-        email: email.trim(),
+        phone: mobile.trim(),  // Phone is primary
+        email: email.trim() || undefined,  // Email is optional
         mobile: mobile.trim(),
         idCardNo: idCardNo.trim(),
         password,
@@ -149,17 +159,17 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ user, onComplete, o
                 className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600 outline-none focus:ring-2 focus:ring-cyan-500" required />
             </div>
             <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium mb-2">{language === 'ur' ? 'ای میل' : 'Email'}</label>
-              <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                aria-label="Email"
-                placeholder="your@email.com"
-                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600 outline-none focus:ring-2 focus:ring-cyan-500" required />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="mobile" className="block text-sm font-medium mb-2">{strings.yourMobile} ({language === 'ur' ? 'اختیاری' : 'Optional'})</label>
+              <label htmlFor="mobile" className="block text-sm font-medium mb-2">{strings.yourMobile} <span className="text-red-500">*</span></label>
               <input type="tel" id="mobile" value={mobile} onChange={(e) => setMobile(e.target.value)}
                 aria-label={strings.yourMobile as string}
                 placeholder="+92 XXX XXXXXXX"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600 outline-none focus:ring-2 focus:ring-cyan-500" required />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="email" className="block text-sm font-medium mb-2">{language === 'ur' ? 'ای میل' : 'Email'} ({language === 'ur' ? 'اختیاری' : 'Optional'})</label>
+              <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                aria-label="Email"
+                placeholder="your@email.com"
                 className="w-full px-3 py-2 border border-slate-300 rounded-md dark:bg-slate-700 dark:border-slate-600 outline-none focus:ring-2 focus:ring-cyan-500" />
             </div>
             <div className="mb-4">
