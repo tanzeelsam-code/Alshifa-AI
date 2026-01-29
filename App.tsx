@@ -445,17 +445,12 @@ const App: React.FC = () => {
       case AppState.REGISTRATION: return <RegistrationForm user={currentUser!} onComplete={async (newUser) => {
         const loadingToast = toast.loading('Creating account...');
         try {
-          // Normalize email for Supabase (must be valid email format)
-          // Use Mobile Number as the unique identifier for all roles
-          let identifier: string;
-
-          if (newUser.mobile) {
-            identifier = newUser.mobile.replace(/[^\d]/g, '');
-          } else {
-            identifier = newUser.name?.replace(/\s+/g, '').toLowerCase() || `user_${Date.now()}`;
+          // Use email directly from registration form
+          const email = (newUser as any).email;
+          
+          if (!email) {
+            throw new Error('Email is required for registration');
           }
-
-          const email = identifier.includes('@') ? identifier : `${identifier}@alshifa.ai`;
 
           await sbRegister(
             email,
