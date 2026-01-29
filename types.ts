@@ -1,9 +1,9 @@
 
 export enum Role {
-  PATIENT = 'Patient',
-  DOCTOR = 'Doctor',
-  PHYSICIAN = 'Physician',
-  ADMIN = 'System Admin',
+  PATIENT = 'patient',
+  DOCTOR = 'doctor',
+  PHYSICIAN = 'doctor', // Map to 'doctor' for DB compatibility
+  ADMIN = 'admin',
 }
 
 export type Language = 'en' | 'ur';
