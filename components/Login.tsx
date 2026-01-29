@@ -29,29 +29,17 @@ const Login: React.FC<LoginProps> = ({ role, onLogin, onSwitchToRegister, onBack
     <div className="max-w-md mx-auto">
       <h2 className="text-2xl font-semibold mb-6 text-center">{strings.login}</h2>
       <form onSubmit={handleSubmit}>
-        {role === Role.PATIENT ? (
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">{strings.yourMobile}</label>
-            <input type="tel" value={identifier} onChange={(e) => setIdentifier(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-xl dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 outline-none" required />
-          </div>
-        ) : role === Role.DOCTOR ? (
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">{language === 'ur' ? 'ڈاکٹر کا نام' : 'Physician Name'}</label>
-            <input type="text" value={identifier} onChange={(e) => setIdentifier(e.target.value)}
-              placeholder={language === 'ur' ? 'اپنا نام درج کریں' : 'Enter your name'}
-              className="w-full px-4 py-3 border border-slate-300 rounded-xl dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 outline-none" required />
-          </div>
-        ) : (
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Admin Name/ID</label>
-            <input type="text" value={identifier} onChange={(e) => setIdentifier(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-xl dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 outline-none" required />
-          </div>
-        )}
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">{language === 'ur' ? 'ای میل' : 'Email'}</label>
+          <input type="email" value={identifier} onChange={(e) => setIdentifier(e.target.value)}
+            placeholder={language === 'ur' ? 'your@email.com' : 'your@email.com'}
+            className="w-full px-4 py-3 border border-slate-300 rounded-xl dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 outline-none" required />
+        </div>
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2">{strings.password}</label>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+            aria-label={strings.password as string}
+            placeholder="••••••••"
             className="w-full px-4 py-3 border border-slate-300 rounded-xl dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 outline-none" required />
         </div>
         <div className="flex gap-4">
